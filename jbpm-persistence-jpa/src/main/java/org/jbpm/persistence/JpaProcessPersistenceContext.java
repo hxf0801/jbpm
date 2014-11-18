@@ -16,6 +16,7 @@ import org.drools.persistence.TransactionManagerHelper;
 import org.drools.persistence.jpa.JpaPersistenceContext;
 import org.jbpm.persistence.correlation.CorrelationKeyInfo;
 import org.jbpm.persistence.processinstance.JPASignalManager;
+import org.jbpm.persistence.processinstance.ProcessInstanceExtra;
 import org.jbpm.persistence.processinstance.ProcessInstanceInfo;
 import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.ProcessInstanceManager;
@@ -133,5 +134,28 @@ public class JpaProcessPersistenceContext extends JpaPersistenceContext
             return null;
         }
     }
+
+	@Override
+	public ProcessInstanceExtra persist(ProcessInstanceExtra processInstanceExtra) {
+        EntityManager em = getEntityManager();
+        em.persist(processInstanceExtra);
+        if( this.pessimisticLocking ) { 
+            return em.find(ProcessInstanceExtra.class, processInstanceExtra.getProcessInstanceId(), LockModeType.PESSIMISTIC_FORCE_INCREMENT );
+        }
+        return processInstanceExtra;
+	}
+
+	private ProcessInstanceExtra findProcessInstanceExtra(Long processInstanceId) {
+		if( this.pessimisticLocking ) { 
+            return getEntityManager().find( ProcessInstanceExtra.class, processInstanceId, LockModeType.PESSIMISTIC_FORCE_INCREMENT );
+        }
+        return getEntityManager().find( ProcessInstanceExtra.class, processInstanceId );
+	}
+
+	private void remove(ProcessInstanceExtra processInstanceExtra) {
+        if(null != processInstanceExtra){
+        	getEntityManager().remove( processInstanceExtra );
+        }
+	}
     
 }

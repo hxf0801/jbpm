@@ -18,13 +18,16 @@ package org.jbpm.process.audit;
 
 import static org.kie.internal.query.QueryParameterIdentifiers.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,6 +39,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
+import org.apache.commons.codec.binary.Base64;
+import org.jbpm.persistence.processinstance.ProcessInstanceExtra;
 import org.jbpm.process.audit.query.NodeInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.ProcInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.VarInstLogQueryBuilderImpl;
@@ -44,6 +49,8 @@ import org.jbpm.process.audit.strategy.PersistenceStrategyType;
 import org.jbpm.process.audit.strategy.StandaloneJtaStrategy;
 import org.kie.api.runtime.Environment;
 import org.kie.api.runtime.EnvironmentName;
+import org.kie.api.search.SearchCriteria;
+import org.kie.api.search.WhereParameter;
 import org.kie.internal.query.QueryAndParameterAppender;
 import org.kie.internal.query.QueryModificationService;
 import org.kie.internal.query.data.QueryData;
@@ -136,6 +143,17 @@ public class JPAAuditLogService implements AuditLogService {
     }
 
     /* (non-Javadoc)
+     * @see org.jbpm.process.audit.AuditLogService#findActiveProcessInstances(java.lang.String)
+     */
+    @Override
+    public List<ProcessInstanceLog> findActiveProcessInstances() {
+        EntityManager em = getEntityManager();
+        Query query = em
+                .createQuery("FROM ProcessInstanceLog p WHERE p.end is null");
+        return executeQuery(query, em, ProcessInstanceLog.class);
+    }
+    
+    /* (non-Javadoc)
      * @see org.jbpm.process.audit.AuditLogService#findProcessInstances(java.lang.String)
      */
     @Override
@@ -166,10 +184,47 @@ public class JPAAuditLogService implements AuditLogService {
     public ProcessInstanceLog findProcessInstance(long processInstanceId) {
         EntityManager em = getEntityManager();
         Object newTx = joinTransaction(em);
-        try {
-        	return (ProcessInstanceLog) em
-        	        .createQuery("FROM ProcessInstanceLog p WHERE p.processInstanceId = :processInstanceId")
-        	        .setParameter("processInstanceId", processInstanceId).getSingleResult();
+		try {
+			ProcessInstanceLog processInstanceLog = (ProcessInstanceLog) em
+					.createQuery(
+							"FROM ProcessInstanceLog p WHERE p.processInstanceId = :processInstanceId")
+					.setParameter("processInstanceId", processInstanceId)
+					.getSingleResult();
+
+			ProcessInstanceExtra processInstanceExtra = (ProcessInstanceExtra) getEntityManager()
+					.createQuery(
+							"FROM ProcessInstanceExtra p WHERE p.processInstanceId = :processInstanceId")
+					.setParameter("processInstanceId", processInstanceId)
+					.getSingleResult();
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("site_code", processInstanceExtra.getSiteCode());
+			map.put("service_code", processInstanceExtra.getServiceCode());
+			map.put("company_code", processInstanceExtra.getCompanyCode());
+			map.put("process_group", processInstanceExtra.getProcessGroup());
+			map.put("item_key", processInstanceExtra.getItemKey());
+			map.put("item_type", processInstanceExtra.getItemType());
+			map.put("opt_type", processInstanceExtra.getOptType());
+			map.put("text1", processInstanceExtra.getText1());
+			map.put("text2", processInstanceExtra.getText2());
+			map.put("text3", processInstanceExtra.getText3());
+			map.put("text4", processInstanceExtra.getText4());
+			map.put("text5", processInstanceExtra.getText5());
+			map.put("char1", processInstanceExtra.getChar1());
+			map.put("char2", processInstanceExtra.getChar2());
+			map.put("money1", processInstanceExtra.getMoney1());
+			map.put("money2", processInstanceExtra.getMoney2());
+			map.put("money3", processInstanceExtra.getMoney3());
+			map.put("integer1", processInstanceExtra.getInteger1());
+			map.put("integer2", processInstanceExtra.getInteger2());
+			map.put("decimal1", processInstanceExtra.getDecimal1());
+			map.put("decimal2", processInstanceExtra.getDecimal2());
+			map.put("date1", processInstanceExtra.getDate1());
+			map.put("date2", processInstanceExtra.getDate2());
+			map.put("date3", processInstanceExtra.getDate3());
+			map.put("timestamp1", processInstanceExtra.getTimestamp1());
+			map.put("timestamp2", processInstanceExtra.getTimestamp2());
+			processInstanceLog.setMoreProperties(map);
+			return processInstanceLog;
         } catch (NoResultException e) {
         	return null;
         } finally {
@@ -240,6 +295,7 @@ public class JPAAuditLogService implements AuditLogService {
     }
 
 
+
     @Override
     public List<VariableInstanceLog> findVariableInstancesByName(String variableId, boolean onlyActiveProcesses) {
         EntityManager em = getEntityManager();
@@ -283,7 +339,8 @@ public class JPAAuditLogService implements AuditLogService {
     /* (non-Javadoc)
      * @see org.jbpm.process.audit.AuditLogService#clear()
      */
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void clear() {
         EntityManager em = getEntityManager();
         Object newTx = joinTransaction(em);
@@ -292,6 +349,10 @@ public class JPAAuditLogService implements AuditLogService {
         for (ProcessInstanceLog processInstance: processInstances) {
             em.remove(processInstance);
         }
+        List<ProcessInstanceExtra> processExtras = em.createQuery("FROM ProcessInstanceExtra").getResultList();
+		for (ProcessInstanceExtra extra : processExtras) {
+			em.remove(extra);
+		}
         List<NodeInstanceLog> nodeInstances = em.createQuery("FROM NodeInstanceLog").getResultList();
         for (NodeInstanceLog nodeInstance: nodeInstances) {
             em.remove(nodeInstance);
@@ -323,7 +384,8 @@ public class JPAAuditLogService implements AuditLogService {
        persistenceStrategy.leaveTransaction(em, transaction);
     }
 
-    private <T> List<T> executeQuery(Query query, EntityManager em, Class<T> type) { 
+    @SuppressWarnings("unchecked")
+	private <T> List<T> executeQuery(Query query, EntityManager em, Class<T> type) { 
         Object newTx = joinTransaction(em);
         List<T> result;
         try { 
@@ -427,7 +489,8 @@ public class JPAAuditLogService implements AuditLogService {
        
     }
    
-    private static void addCriteria( String listId, String fieldName, Class type ) { 
+    @SuppressWarnings("rawtypes")
+	private static void addCriteria( String listId, String fieldName, Class type ) { 
         criteriaFields.put(listId, fieldName);
         criteriaFieldClasses.put(listId, type );
     }
@@ -471,7 +534,8 @@ public class JPAAuditLogService implements AuditLogService {
         return result;
     }
 
-    private static String createQuery(String queryBase, QueryData queryData, Map<String, Object> queryParams) { 
+    @SuppressWarnings("unchecked")
+	private static String createQuery(String queryBase, QueryData queryData, Map<String, Object> queryParams) { 
         // setup
         StringBuilder queryBuilder = new StringBuilder(queryBase);
         QueryAndParameterAppender queryAppender = new QueryAndParameterAppender(queryBuilder, queryParams, true);
@@ -673,7 +737,8 @@ public class JPAAuditLogService implements AuditLogService {
         }
     }
 
-    private <T> List<T> queryWithParameters(Map<String, Object> params, LockModeType lockMode, Class<T> clazz, Query query) {
+    @SuppressWarnings("unchecked")
+	private <T> List<T> queryWithParameters(Map<String, Object> params, LockModeType lockMode, Class<T> clazz, Query query) {
         if (lockMode != null) {
             query.setLockMode(lockMode);
         }
@@ -700,5 +765,166 @@ public class JPAAuditLogService implements AuditLogService {
             }
         }
         return query.getResultList();
-    } 
+    }
+
+    /**
+     * (non-Javadoc)
+     * @see org.kie.api.runtime.manager.audit.AuditService#getProcessInstances(org.kie.api.search.SearchCriteria)
+     * @author PTI
+     */
+    @Override
+    public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
+        EntityManager em = getEntityManager();
+        Object newTx = joinTransaction(em);
+
+        StringBuffer sb = new StringBuffer("select p.id, p.duration, p.end_date, p.externalid, p.user_identity,");
+        sb.append(" p.outcome, p.parentprocessinstanceid, p.processid, p.processinstanceid, p.processname,");
+        sb.append(" p.processversion, p.start_date, p.status, propTable.site_code, propTable.service_code,");
+        sb.append(" propTable.company_code, propTable.process_group, propTable.item_key, propTable.item_type, propTable.opt_type, propTable.text1, propTable.text2, propTable.text3,");
+        sb.append(" propTable.text4, propTable.text5, propTable.char1, propTable.char2, propTable.money1,");
+        sb.append(" propTable.money2, propTable.money3, propTable.integer1, propTable.integer2, propTable.decimal1, propTable.decimal2, ");
+        sb.append(" propTable.date1, propTable.date2, propTable.date3, propTable.timestamp1, propTable.timestamp2 ");
+        sb.append(" from ProcessInstanceLog p left join ProcInstanceProp propTable on p.processInstanceId=propTable.process_instance_id");
+        
+        if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+            searchCriteria.setWhereStr(new String(Base64.decodeBase64(searchCriteria.getWhereStr().getBytes())));
+        }
+
+        logger.info("******************************" + searchCriteria);
+
+        Map<String, Object> queryParams = new HashMap<String, Object>();
+        if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+            sb.append(" where ").append(searchCriteria.getWhereStr());
+            List<WhereParameter> fields = searchCriteria.getParams();
+            for (WhereParameter paramObj : fields) {
+                Set<Object> paramVals = new HashSet<Object>();
+                List<?> values = paramObj.getValues();
+                if (null != values) {
+                    for (Object val : values) {
+                        if (val != null) {
+                            paramVals.add(val);
+                        }
+                    }
+                }
+                queryParams.put(String.valueOf(paramObj.getParameterPosition()), paramVals);
+            }
+        } else {
+            logger.error("There is not valid where clause.");
+            return null;
+        }
+
+        if (null != searchCriteria.getOrderBy() && !searchCriteria.getOrderBy().isEmpty()) {
+            sb.append(searchCriteria.getOrderBy());
+        } else {
+            sb.append(" order by p.id desc");
+		}
+		// 2014.11.3 support totalPages and totalRows
+		String totalSql = "select count(*) from (" + sb.toString() + ")";
+		logger.info("***************** findProcessInstances sql is [" + sb.toString() + "]");
+		logger.info("***************** totalPages sql is [" + totalSql + "]");
+		Query totalQuery = em.createNativeQuery(totalSql);
+		setParameters(queryParams, totalQuery);
+		int totalRows = ((BigDecimal)totalQuery.getSingleResult()).intValue();
+		int totalPages = (totalRows + searchCriteria.getMaxResults() - 1) / searchCriteria.getMaxResults();
+
+        Query query = em.createNativeQuery(sb.toString());
+        setParameters(queryParams, query);
+		Integer startPosition = searchCriteria.getFirstResult();
+		if (startPosition != -1) {
+			query.setFirstResult(startPosition);
+		}
+		Integer maxResult = searchCriteria.getMaxResults();
+		if (maxResult != -1) {
+			query.setMaxResults(maxResult);
+		}
+	
+		@SuppressWarnings("unchecked")
+		List<Object[]> list = query.getResultList();
+		List<ProcessInstanceLog> results = new ArrayList<ProcessInstanceLog>();
+		if (null != results) {
+			boolean isFirstRecord = true;
+			for (Object[] row : list) {
+				long processInstanceId = ((null == row[8] ? 0L : ((BigDecimal) row[8]).longValue()));
+				String processId = (String) row[7];
+				ProcessInstanceLog vo = new ProcessInstanceLog(processInstanceId, processId);
+				
+				int i = -1;
+				vo.setId(((BigDecimal) row[++i]).longValue());
+                if (null != row[++i]) vo.setDuration(((BigDecimal) row[i]).longValue());
+				vo.setEnd((Date) row[++i]);
+				vo.setExternalId((String) row[++i]);
+				vo.setIdentity((String) row[++i]);
+				vo.setOutcome((String) row[++i]);
+				if (null != row[++i]) vo.setParentProcessInstanceId(((BigDecimal) row[i]).longValue());
+			    i+=2; // 7 and 8
+				vo.setProcessName((String) row[++i]);
+				vo.setProcessVersion((String) row[++i]);
+				vo.setStart((Date) row[++i]);
+				if (null != row[++i]) vo.setStatus(((BigDecimal) row[i]).intValue());
+				
+				// all keys must be lower case. The following statements must be same as 
+				// the block in line 694 of TaskQueryServiceImpl.java
+				Map<String, Object> map = new HashMap<String, Object>();
+				if(null != row[++i]) map.put("site_code", (String) row[i]);
+				if(null != row[++i]) map.put("service_code", (String) row[i]);
+				if(null != row[++i]) map.put("company_code", (String) row[i]);
+				if(null != row[++i]) map.put("process_group", (String) row[i]);
+				if(null != row[++i]) map.put("item_key", (String) row[i]);
+                if(null != row[++i]) map.put("item_type", (String) row[i]);
+                if(null != row[++i]) map.put("opt_type", (String) row[i]);
+				if(null != row[++i]) map.put("text1", (String) row[i]);
+				if(null != row[++i]) map.put("text2", (String) row[i]);
+				if(null != row[++i]) map.put("text3", (String) row[i]);
+				if(null != row[++i]) map.put("text4", (String) row[i]);
+				if(null != row[++i]) map.put("text5", (String) row[i]);
+				if(null != row[++i]) map.put("char1", (String) row[i]);
+				if(null != row[++i]) map.put("char2", (String) row[i]);
+				if(null != row[++i]) map.put("money1", ((BigDecimal) row[i]).doubleValue());
+				if(null != row[++i]) map.put("money2", ((BigDecimal) row[i]).doubleValue());
+				if(null != row[++i]) map.put("money3", ((BigDecimal) row[i]).doubleValue());
+				if(null != row[++i]) map.put("integer1", ((BigDecimal) row[i]).longValue());
+				if(null != row[++i]) map.put("integer2", ((BigDecimal) row[i]).longValue());
+				if(null != row[++i]) map.put("decimal1", ((BigDecimal) row[i]).longValue());
+				if(null != row[++i]) map.put("decimal2", ((BigDecimal) row[i]).longValue());
+				if(null != row[++i]) map.put("date1", (Date) row[i]);
+				if(null != row[++i]) map.put("date2", (Date) row[i]);
+				if(null != row[++i]) map.put("date3", (Date) row[i]);
+				if(null != row[++i]) map.put("timestamp1", (Date) row[i]);
+				if(null != row[++i]) map.put("timestamp2", (Date) row[i]);
+				if (isFirstRecord) {
+					// only the first record holds the totalPages and totalRows
+					map.put("_totalRows_", totalRows);
+					map.put("_totalPages_", totalPages);
+					isFirstRecord = false;
+				}
+				vo.setMoreProperties(map);
+				results.add(vo);
+			}
+		}
+		
+		logger.info("Queried process instances::>>>> " + results.size());
+		closeEntityManager(em, newTx);
+        return convertListToInterfaceList(results, org.kie.api.runtime.manager.audit.ProcessInstanceLog.class);
+	}
+
+    /**
+     * Set up parameter to query object
+     * @param queryParams - a map of query parameters
+     * @param query - Query
+     * @author PTI
+     */
+	private void setParameters(Map<String, Object> queryParams, Query query) {
+		if (queryParams != null && !queryParams.isEmpty()) {
+            for (String name : queryParams.keySet()) {
+                int position = 0;
+                try {
+                    position = Integer.parseInt(name);
+                } catch (Exception e) {
+                    logger.info("Name[" + name + "] is not a valid number, using named parameter");
+                    position = 0;
+                }
+                query.setParameter(position, queryParams.get(name));
+            }
+        }
+	}
 }

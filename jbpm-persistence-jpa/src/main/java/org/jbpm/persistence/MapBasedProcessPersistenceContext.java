@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.drools.persistence.map.MapBasedPersistenceContext;
 import org.jbpm.persistence.correlation.CorrelationKeyInfo;
+import org.jbpm.persistence.processinstance.ProcessInstanceExtra;
 import org.jbpm.persistence.processinstance.ProcessInstanceInfo;
 import org.kie.internal.process.CorrelationKey;
 
@@ -80,4 +81,10 @@ public class MapBasedProcessPersistenceContext extends MapBasedPersistenceContex
         ProcessInstanceInfo piInfo = this.processInstancesByBusinessKey.get(correlationKey);
         return piInfo.getId();
     }
+
+	@Override
+	public ProcessInstanceExtra persist(
+			ProcessInstanceExtra processInstanceExtra) {
+		return null;
+	}
 }

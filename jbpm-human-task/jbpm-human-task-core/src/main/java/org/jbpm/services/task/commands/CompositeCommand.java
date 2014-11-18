@@ -72,6 +72,7 @@ public class CompositeCommand<T> extends TaskCommand<T> {
 	            @XmlElement(name="get-task-assigned-by-groups", type=GetTaskAssignedByGroupsCommand.class),
 	            @XmlElement(name="get-task-by-work-item-id", type=GetTaskByWorkItemIdCommand.class),
 	            @XmlElement(name="get-task", type=GetTaskCommand.class),
+	            @XmlElement(name="get-tasks-command", type=GetTasksCommand.class),
 	            @XmlElement(name="get-task-content", type=GetTaskContentCommand.class),
 	            @XmlElement(name="get-task-definition", type=GetTaskDefinitionCommand.class),
 	            @XmlElement(name="get-task-owned-by-exp-date-before-date", type=GetTaskOwnedByExpDateBeforeDateCommand.class),

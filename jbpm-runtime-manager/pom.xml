@@ -227,6 +227,7 @@
               org.kie.api.runtime.process,
               org.kie.api.task,
               org.kie.api.task.model,
+			  org.kie.api.search,
               org.kie.internal,
               org.kie.internal.query,
               org.kie.internal.builder,

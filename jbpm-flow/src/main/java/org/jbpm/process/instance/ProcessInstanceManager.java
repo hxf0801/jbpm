@@ -17,6 +17,7 @@
 package org.jbpm.process.instance;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.kie.internal.process.CorrelationKey;
 import org.kie.api.runtime.process.ProcessInstance;
@@ -42,5 +43,11 @@ public interface ProcessInstanceManager {
     void clearProcessInstances();
     
     void clearProcessInstancesState();
-
+    /**
+     * To persist additional process variables
+     * @param processInstance
+     * @param parameters
+     * @author PTI
+     */
+    void addProcessExtra(ProcessInstance processInstance, Map<String, Object> parameters);
 }

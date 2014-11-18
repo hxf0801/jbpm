@@ -1,6 +1,6 @@
 package org.jbpm.services.task.persistence;
 
-
+import java.math.BigDecimal;
 import static org.kie.internal.query.QueryParameterIdentifiers.*;
 import static org.jbpm.services.task.persistence.TaskQueryManager.*;
 
@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.drools.core.util.StringUtils;
 import org.jbpm.services.task.impl.model.AttachmentImpl;
@@ -32,7 +33,6 @@ import org.kie.api.task.model.Group;
 import org.kie.api.task.model.OrganizationalEntity;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.User;
-import org.kie.internal.query.QueryParameterIdentifiers;
 import org.kie.internal.task.api.TaskPersistenceContext;
 import org.kie.internal.task.api.model.Deadline;
 import org.slf4j.Logger;
@@ -559,5 +559,85 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 		
 		return query;
 	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Object[]> nativequeryWithParametersInTransaction(String queryString, Map<String, Object> params) {
+		check();
+		Query query = this.em.createNativeQuery(queryString);
 
+		if (params != null && !params.isEmpty()) {
+			for (String name : params.keySet()) {
+				if (FIRST_RESULT.equals(name)) {
+					query.setFirstResult((Integer) params.get(name));
+					continue;
+				}
+				if (MAX_RESULTS.equals(name)) {
+					query.setMaxResults((Integer) params.get(name));
+					continue;
+				}
+				if (FLUSH_MODE.equals(name)) {
+					query.setFlushMode(FlushModeType.valueOf((String) params.get(name)));
+					continue;
+				}
+				
+				int position = 0;
+				try {
+					position = Integer.parseInt(name);
+				} catch (Exception e) {
+					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					position = 0;
+				}
+				if (position > 1) {
+				    Object o = params.get(name);
+				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+                    if (o instanceof XMLGregorianCalendar) {
+                        query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
+                    } else {
+                        query.setParameter(position, o);
+                    }
+				} else {
+					query.setParameter(name, params.get(name));
+				}
+			}
+		}
+		return query.getResultList();
+	}
+
+	@Override
+	public int nativequeryTotalRows(String queryString, Map<String, Object> params) {
+		check();
+		Query query = this.em.createNativeQuery(queryString);
+
+		if (params != null && !params.isEmpty()) {
+			for (String name : params.keySet()) {
+				if (FLUSH_MODE.equals(name)) {
+					query.setFlushMode(FlushModeType.valueOf((String) params.get(name)));
+					continue;
+				}
+				if (MAX_RESULTS.equals(name) || FIRST_RESULT.equals(name)) {
+					continue;
+				}
+				
+				int position = 0;
+				try {
+					position = Integer.parseInt(name);
+				} catch (Exception e) {
+					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					position = 0;
+				}
+				if (position > 1) {
+				    Object o = params.get(name);
+				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+                    if (o instanceof XMLGregorianCalendar) {
+                        query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
+                    } else {
+                        query.setParameter(position, o);
+                    }
+				} else {
+					query.setParameter(name, params.get(name));
+				}
+			}
+		}
+		return ((BigDecimal)query.getSingleResult()).intValue();
+	}
 }
