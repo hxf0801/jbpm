@@ -18,6 +18,7 @@ package org.jbpm.process.audit;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -82,7 +83,9 @@ public class ProcessInstanceLog implements Serializable, AuditEvent, org.kie.api
     private String externalId;
     
     private String processInstanceDescription;
-    
+
+    // these fields are custom
+    private transient Map<String, Object> moreProperties;    
     public ProcessInstanceLog() {
     }
     
@@ -155,6 +158,7 @@ public class ProcessInstanceLog implements Serializable, AuditEvent, org.kie.api
 		result = prime * result + ((processVersion == null) ? 0 : processVersion.hashCode());
 		result = prime * result + ((processName == null) ? 0 : processName.hashCode());
 		result = prime * result + ((processInstanceDescription == null) ? 0 : processInstanceDescription.hashCode());
+		result = prime * result + ((moreProperties == null) ? 0 : moreProperties.hashCode());
 		return result;
 	}
 
@@ -238,6 +242,11 @@ public class ProcessInstanceLog implements Serializable, AuditEvent, org.kie.api
             if (other.processInstanceDescription != null)
                 return false;
         } else if (!processInstanceDescription.equals(other.processInstanceDescription))
+            return false;
+		if (moreProperties == null) {
+            if (other.moreProperties != null)
+                return false;
+        } else if (!moreProperties.equals(other.moreProperties))
             return false; 
 		return true; 
 	}
@@ -312,6 +321,14 @@ public class ProcessInstanceLog implements Serializable, AuditEvent, org.kie.api
 
     public void setProcessInstanceDescription(String processInstanceDescription) {
         this.processInstanceDescription = processInstanceDescription;
+    }
+
+    public Map<String, Object> getMoreProperties() {
+        return moreProperties;
+    }
+
+    public void setMoreProperties(Map<String, Object> moreProperties) {
+        this.moreProperties = moreProperties;
     }
 
 }

@@ -20,6 +20,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.User;
@@ -52,6 +53,7 @@ public class TaskSummaryImpl implements InternalTaskSummary {
     private long parentId;
     private List<String> potentialOwners;
     private boolean quickTaskSummary;
+    private Map<String, Object> moreProperties;
 
     public TaskSummaryImpl(long id,
             String name,
@@ -589,5 +591,21 @@ public class TaskSummaryImpl implements InternalTaskSummary {
     @Override
     public String getDeploymentId() {
         return deploymentId;
+    }
+
+	public void setCreatedById(String createdById) {
+		this.createdById = createdById;
+	}
+
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
+	}
+
+    public Map<String, Object> getMoreProperties() {
+        return moreProperties;
+    }
+
+    public void setMoreProperties(Map<String, Object> moreProperties) {
+        this.moreProperties = moreProperties;
     }
 }

@@ -34,7 +34,9 @@ import static org.kie.internal.query.QueryParameterIdentifiers.STAKEHOLDER_ID_LI
 import static org.kie.internal.query.QueryParameterIdentifiers.TASK_ID_LIST;
 import static org.kie.internal.query.QueryParameterIdentifiers.TASK_STATUS_LIST;
 import static org.kie.internal.query.QueryParameterIdentifiers.WORK_ITEM_ID_LIST;
+import static org.kie.internal.query.QueryParameterIdentifiers.FLUSH_MODE;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +50,13 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.persistence.FlushModeType;
+
+import org.jbpm.services.task.impl.model.UserImpl;
+import org.jbpm.services.task.query.TaskSummaryImpl;
 import org.jbpm.services.task.utils.ClassUtil;
+import org.kie.api.search.SearchCriteria;
+import org.kie.api.search.WhereParameter;
 import org.kie.api.task.UserGroupCallback;
 import org.kie.api.task.model.OrganizationalEntity;
 import org.kie.api.task.model.Status;
@@ -62,8 +70,10 @@ import org.kie.internal.query.data.QueryData;
 import org.kie.internal.task.api.TaskPersistenceContext;
 import org.kie.internal.task.api.TaskQueryService;
 import org.kie.internal.task.api.model.InternalTaskSummary;
+import org.kie.internal.task.api.model.SubTasksStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  *
@@ -968,4 +978,185 @@ public class TaskQueryServiceImpl implements TaskQueryService {
             
         queryBuilder.append("\nAND ").append(rolesQueryPhraseBuilder);
     }
+
+    /**
+     * @author PTI
+     */
+    @Override
+	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
+    	String GENERIC_TASKSUM_QUERY = 
+            "select distinct t.id, t.processInstanceId, t.name, t.subject, t.description,"
+            + " t.status, t.priority, t.skipable, t.actualOwner_id,"
+            + " t.createdBy_id, t.createdOn, t.activationTime, t.expirationTime, t.processId, t.processSessionId,"
+            + " t.subTaskStrategy, t.parentId, p.EXTERNALID, propTable.site_code, propTable.service_code, propTable.company_code,"
+            + " propTable.process_group, propTable.item_key, propTable.item_type, propTable.text1, propTable.text2, propTable.text3, propTable.text4, propTable.text5,"
+            + " propTable.char1, propTable.char2, propTable.money1, propTable.money2, propTable.money3, propTable.integer1, propTable.integer2,"
+            + " propTable.decimal1, propTable.decimal2, propTable.date1, propTable.date2, propTable.date3, propTable.timestamp1, propTable.timestamp2 "
+            + "from Task t, "
+            + " OrganizationalEntity businessAdministrator,"
+            + " OrganizationalEntity potentialOwners,"
+            + " ProcessInstanceLog p,"
+            + " ProcInstanceProp propTable "
+            + "where t.archived=0 and t.status in ('Created' , 'Ready' , 'Reserved' , 'InProgress' , 'Suspended')"
+            + " and p.processInstanceId=propTable.process_instance_id and p.processInstanceId=t.processInstanceId and ";
+        StringBuilder queryBuilder = new StringBuilder(GENERIC_TASKSUM_QUERY);
+
+        Map<String, Object> queryParams = new HashMap<String, Object>();
+        queryParams.put(FLUSH_MODE, FlushModeType.COMMIT.toString());
+		queryParams.put(FIRST_RESULT, searchCriteria.getFirstResult());
+		if(searchCriteria.getMaxResults() != -1) {
+			queryParams.put(MAX_RESULTS, searchCriteria.getMaxResults());
+		}
+		
+		if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+			searchCriteria.setWhereStr(new String(Base64.decodeBase64(searchCriteria.getWhereStr().getBytes())));
+		}
+
+		logger.info("******************************" + searchCriteria);
+		
+        int nextPosition = 0;
+		if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+            queryBuilder.append(searchCriteria.getWhereStr());
+            List<WhereParameter> fields = searchCriteria.getParams();
+            nextPosition = fields.size();
+            for (WhereParameter paramObj : fields) {
+                List<?> values = paramObj.getValues();
+                if (null != values) {
+                    if(values.size() > 1) {
+                        Set<Object> paramVals = new HashSet<Object>();
+                        for (Object val : values) {
+                            if (val != null) {
+                                paramVals.add(val);
+                            }
+                        }
+                        queryParams.put(String.valueOf(paramObj.getParameterPosition()), paramVals);
+                    } else if(values.size() == 1) {
+                        queryParams.put(String.valueOf(paramObj.getParameterPosition()), values.get(0));
+                    }
+                }
+            }
+		}
+        // add userId or groupIds
+        if ((null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty())
+                || (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0)) {
+        	// (t.actualOwner_id is null or t.actualOwner_id = ?)
+            // (potentialOwners.id=?1 or potentialOwners.id in (?2)) and (potentialOwners.id in (select pot_.entity_id from PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))
+            if (nextPosition > 0) {
+                queryBuilder.append(" and ");
+            }
+            boolean hasUserId = false;
+            if (null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty()) {
+            	queryBuilder.append("(t.actualOwner_id is null or t.actualOwner_id = ?").append(++nextPosition).append(") and ");
+            	queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
+            	
+                queryBuilder.append("(potentialOwners.id=?").append(++nextPosition);
+                queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
+                hasUserId = true;
+            } else {
+            	queryBuilder.append("(");
+            }
+            if (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0) {
+                if (hasUserId)
+                    queryBuilder.append(" or ");
+                queryBuilder.append("potentialOwners.id in (?").append(++nextPosition).append(")");
+                Set<Object> paramVals = new HashSet<Object>();
+                for (String str : searchCriteria.getGroupIds()) {
+                    if (null != str) {
+                        paramVals.add(str);
+                    }
+                }
+                queryParams.put(String.valueOf(nextPosition), paramVals);
+            }
+            queryBuilder
+                    .append(")")
+                    .append(" and (potentialOwners.id in (select pot_.entity_id from PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))");
+        }
+        
+        if (null != searchCriteria.getOrderBy() && !searchCriteria.getOrderBy().isEmpty()) {
+            queryBuilder.append(searchCriteria.getOrderBy());
+        } else {
+            queryBuilder.append(" order by t.processInstanceId DESC, t.id DESC");
+        }
+        
+        String query = queryBuilder.toString();
+        String totalSql = "select count(*) from (" + query + ")";
+        logger.info("QUERY: " + query);
+        logger.info("Query params:" + queryParams);
+        logger.info("Total QUERY: " + totalSql);
+        
+        // 2014.11.3 support totalPages and totalRows
+        int totalRows = persistenceContext.nativequeryTotalRows(totalSql, queryParams);
+		int totalPages = (totalRows + searchCriteria.getMaxResults() - 1) / searchCriteria.getMaxResults();
+        
+        List<Object[]> list = persistenceContext.nativequeryWithParametersInTransaction(query, queryParams);
+        List<TaskSummary> results = new ArrayList<TaskSummary>();
+		if (null != results) {
+			boolean isFirstRecord = true;
+			for (Object[] row : list) {
+			    int i = -1;
+				TaskSummaryImpl vo = new TaskSummaryImpl();
+				vo.setId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
+				vo.setProcessInstanceId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
+				vo.setName((String) row[++i]);
+				vo.setSubject((String) row[++i]);
+				vo.setDescription((String)row[++i]);
+				vo.setStatus(Status.valueOf((String)row[++i]));
+				vo.setPriority((null == row[++i] ? 0 : ((BigDecimal) row[i]).intValue()));
+				vo.setSkipable(((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue())) == 1);
+				UserImpl user = new UserImpl();
+				user.setId((String)row[++i]);
+				vo.setActualOwner(user);
+				user = new UserImpl();
+				user.setId((String)row[++i]);
+				vo.setCreatedBy(user);
+				vo.setCreatedOn((Date) row[++i]);
+				vo.setActivationTime((Date) row[++i]);
+				vo.setExpirationTime((Date) row[++i]);
+				vo.setProcessId((String)row[++i]);
+				vo.setProcessSessionId((null == row[++i] ? 0 : ((BigDecimal) row[i]).intValue()));
+				vo.setSubTaskStrategy(SubTasksStrategy.valueOf((String)row[++i]));
+				vo.setParentId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
+				vo.setDeploymentId((String) row[++i]);
+
+				// all keys must be lower case. The following statements must be same as 
+				// the block in line 483 of JPAAuditLogService.java
+				Map<String, Object> map = new HashMap<String, Object>();
+                if(null != row[++i]) map.put("site_code", (String) row[i]);
+                if(null != row[++i]) map.put("service_code", (String) row[i]);
+                if(null != row[++i]) map.put("company_code", (String) row[i]);
+                if(null != row[++i]) map.put("process_group", (String) row[i]);
+                if(null != row[++i]) map.put("item_key", (String) row[i]);
+                if(null != row[++i]) map.put("item_type", (String) row[i]);
+                if(null != row[++i]) map.put("text1", (String) row[i]);
+                if(null != row[++i]) map.put("text2", (String) row[i]);
+                if(null != row[++i]) map.put("text3", (String) row[i]);
+                if(null != row[++i]) map.put("text4", (String) row[i]);
+                if(null != row[++i]) map.put("text5", (String) row[i]);
+                if(null != row[++i]) map.put("char1", (String) row[i]);
+                if(null != row[++i]) map.put("char2", (String) row[i]);
+                if(null != row[++i]) map.put("money1", ((BigDecimal) row[i]).doubleValue());
+                if(null != row[++i]) map.put("money2", ((BigDecimal) row[i]).doubleValue());
+                if(null != row[++i]) map.put("money3", ((BigDecimal) row[i]).doubleValue());
+                if(null != row[++i]) map.put("integer1", ((BigDecimal) row[i]).longValue());
+                if(null != row[++i]) map.put("integer2", ((BigDecimal) row[i]).longValue());
+                if(null != row[++i]) map.put("decimal1", ((BigDecimal) row[i]).longValue());
+                if(null != row[++i]) map.put("decimal2", ((BigDecimal) row[i]).longValue());
+                if(null != row[++i]) map.put("date1", (Date) row[i]);
+                if(null != row[++i]) map.put("date2", (Date) row[i]);
+                if(null != row[++i]) map.put("date3", (Date) row[i]);
+                if(null != row[++i]) map.put("timestamp1", (Date) row[i]);
+                if(null != row[++i]) map.put("timestamp2", (Date) row[i]);
+				if (isFirstRecord) {
+					// only the first record holds the totalPages and totalRows
+					map.put("_totalRows_", totalRows);
+					map.put("_totalPages_", totalPages);
+					isFirstRecord = false;
+				}
+                vo.setMoreProperties(map);
+				results.add(vo);
+			}
+		}
+		logger.info("Queried tasks::" + results.size());
+		return results;
+	}
 }

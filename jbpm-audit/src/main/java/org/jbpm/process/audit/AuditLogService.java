@@ -19,6 +19,7 @@ package org.jbpm.process.audit;
 import java.util.List;
 
 import org.kie.api.runtime.manager.audit.AuditService;
+import org.kie.api.search.SearchCriteria;
 import org.kie.internal.query.data.QueryData;
 import org.kie.internal.runtime.manager.audit.query.NodeInstanceLogQueryBuilder;
 import org.kie.internal.runtime.manager.audit.query.ProcessInstanceLogQueryBuilder;
@@ -88,4 +89,12 @@ public interface AuditLogService extends AuditService {
     public List<org.kie.api.runtime.manager.audit.VariableInstanceLog> queryVariableInstanceLogs(QueryData queryData);
     
     public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> queryProcessInstanceLogs(QueryData queryData);
+
+    /**
+     * Query process instances
+     * @param searchCriteria
+     * @return a list of {@link ProcessInstanceLog}
+     * @author PTI
+     */
+    public List<ProcessInstanceLog> findProcessInstances(SearchCriteria searchCriteria);
 }

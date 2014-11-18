@@ -20,11 +20,13 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
 import org.jbpm.process.audit.AuditLogService;
 import org.jbpm.process.audit.ProcessInstanceLog;
+import org.kie.api.search.SearchCriteria;
 import org.kie.internal.command.Context;
 
 
@@ -39,6 +41,9 @@ public class FindProcessInstancesCommand extends AuditCommand<List<ProcessInstan
     @XmlSchemaType(name="string")
     private String processId;
     
+    @XmlElement
+    private SearchCriteria searchCriteria;
+    
     public FindProcessInstancesCommand() {
         this.processId = null;
 	}
@@ -50,13 +55,19 @@ public class FindProcessInstancesCommand extends AuditCommand<List<ProcessInstan
         }
 	}
 	
+    public FindProcessInstancesCommand(SearchCriteria searchCriteria) {
+    	this.searchCriteria = searchCriteria;
+	}
+    
     public List<ProcessInstanceLog> execute(Context cntxt) {
         setLogEnvironment(cntxt);
-        if( processId == null || processId.isEmpty() ) {
-            return this.auditLogService.findProcessInstances();
-        } else { 
-            return this.auditLogService.findProcessInstances(processId);
-        }
+        if (null != processId && !processId.isEmpty()) {
+			return this.auditLogService.findProcessInstances(processId);
+		} else if (null != searchCriteria) {
+			return this.auditLogService.findProcessInstances(searchCriteria);
+		} else {
+			return this.auditLogService.findProcessInstances();
+		}
     }
     
     public String getProcessId() {
@@ -66,12 +77,22 @@ public class FindProcessInstancesCommand extends AuditCommand<List<ProcessInstan
     public void setProcessId(String processId) {
         this.processId = processId;
     }
+    
+    public SearchCriteria getSearchCriteria() {
+        return searchCriteria;
+    }
+
+    public void setSearchCriteria(SearchCriteria searchCriteria) {
+        this.searchCriteria = searchCriteria;
+    }
 
     public String toString() {
-        if( processId == null || processId.isEmpty() ) {
-            return AuditLogService.class.getSimpleName() + ".findProcessInstances()";
-        } else { 
-            return AuditLogService.class.getSimpleName() + ".findProcessInstances("+ processId + ")";
-        }
+        if (processId != null && !processId.isEmpty()) {
+			return AuditLogService.class.getSimpleName() + ".findProcessInstances(" + processId + ")";
+		} else if (null != searchCriteria) {
+			return AuditLogService.class.getSimpleName() + ".findProcessInstances(" + searchCriteria + ")";
+		} else {
+			return AuditLogService.class.getSimpleName() + ".findProcessInstances()";
+		}
     }
 }

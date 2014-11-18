@@ -15,6 +15,7 @@
  */
 package org.jbpm.services.task.identity;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -76,6 +77,12 @@ public class DBUserGroupCallbackImpl extends AbstractUserGroupInfo implements Us
 		if (userId == null) {
 			throw new IllegalArgumentException("UserId cannot be null");
 		}
+
+		String userCode = userId;
+		if(userId.indexOf(":") > 0){
+			userCode = userId.substring(userId.indexOf(":")+1, userId.length());
+		}
+		logger.info("======User Code = " + userCode);
 		return checkExistence(this.config.getProperty(PRINCIPAL_QUERY), userId);
 	}
 
@@ -94,20 +101,30 @@ public class DBUserGroupCallbackImpl extends AbstractUserGroupInfo implements Us
 		}
 		
 		List<String> roles = new ArrayList<String>();
+		if(userId.indexOf(":") == -1){
+			return roles;
+		}
 		Connection conn = null;
-		PreparedStatement ps = null;
+		CallableStatement cs = null;
+		//PreparedStatement ps = null;
 		ResultSet rs = null;
 
 		try {
 			conn = ds.getConnection();
+			logger.info("========UserID : " + userId);
+			logger.info("========USER_ROLES_QUERY =" + this.config.getProperty(USER_ROLES_QUERY));
 
-			ps = conn.prepareStatement(this.config.getProperty(USER_ROLES_QUERY));
+			//ps = conn.prepareStatement(this.config.getProperty(USER_ROLES_QUERY));
+			cs = conn.prepareCall(this.config.getProperty(USER_ROLES_QUERY));
 			try {
-				ps.setString(1, userId);
+				cs.registerOutParameter(1, -10);
+				cs.setString(2, userId);
+				//ps.setString(1, userId);
 			} catch (ArrayIndexOutOfBoundsException ignore) {
 
 			}
-			rs = ps.executeQuery();
+			//rs = ps.executeQuery();
+			rs = (ResultSet)cs.getObject(1);
 			while (rs.next()) {
 				roles.add(rs.getString(1));
 			}
@@ -120,9 +137,15 @@ public class DBUserGroupCallbackImpl extends AbstractUserGroupInfo implements Us
 				} catch (SQLException e) {
 				}
 			}
-			if (ps != null) {
+//			if (ps != null) {
+//				try {
+//					ps.close();
+//				} catch (SQLException e) {
+//				}
+//			}
+			if (cs != null) {
 				try {
-					ps.close();
+					cs.close();
 				} catch (SQLException e) {
 				}
 			}
@@ -150,6 +173,11 @@ public class DBUserGroupCallbackImpl extends AbstractUserGroupInfo implements Us
 					+ USER_ROLES_QUERY +"," + ROLES_QUERY +"," +USER_ROLES_QUERY +")");
 		}
 		String jndiName = this.config.getProperty(DS_JNDI_NAME, "java:/DefaultDS");
+		logger.info("============ DS_JNDI_NAME : " + this.config.getProperty(DS_JNDI_NAME));
+		logger.info("============ PRINCIPAL_QUERY : " + this.config.getProperty(PRINCIPAL_QUERY));
+		logger.info("============ ROLES_QUERY : " + this.config.getProperty(ROLES_QUERY));
+		logger.info("============ USER_ROLES_QUERY : " + this.config.getProperty(USER_ROLES_QUERY));
+
 		try {
 			InitialContext ctx = new InitialContext();
 			

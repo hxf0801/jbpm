@@ -17,6 +17,7 @@ import org.jbpm.process.audit.query.NodeInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.ProcInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.VarInstLogQueryBuilderImpl;
 import org.kie.api.runtime.CommandExecutor;
+import org.kie.api.search.SearchCriteria;
 import org.kie.internal.query.data.QueryData;
 import org.kie.internal.runtime.manager.audit.query.NodeInstanceLogQueryBuilder;
 import org.kie.internal.runtime.manager.audit.query.ProcessInstanceLogQueryBuilder;
@@ -119,6 +120,15 @@ public class CommandBasedAuditLogService implements AuditLogService {
     public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> queryProcessInstanceLogs( QueryData queryData ) {
         return executor.execute(new AuditProcessInstanceLogQueryCommand(queryData));
     }
+
+	/**
+	 * (non-Javadoc)
+	 * @see org.jbpm.process.audit.AuditLogService#findProcessInstances(org.kie.api.search.SearchCriteria)
+	 * @author PTI
+	 */
+	public List<ProcessInstanceLog> findProcessInstances(SearchCriteria searchCriteria) {
+		return executor.execute(new FindProcessInstancesCommand(searchCriteria));
+	}
 
     @Override
     public void clear() {

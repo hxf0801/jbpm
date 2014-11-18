@@ -53,6 +53,9 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
             }
         }
         
+        // save process variables into custom table
+        ((InternalProcessRuntime) kruntime.getProcessRuntime()).getProcessInstanceManager().addProcessExtra(processInstance, parameters);
+        
         return processInstance;
 	}
 	

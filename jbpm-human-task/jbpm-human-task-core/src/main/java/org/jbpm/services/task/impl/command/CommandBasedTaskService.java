@@ -1,6 +1,5 @@
 package org.jbpm.services.task.impl.command;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +66,7 @@ import org.jbpm.services.task.commands.GetTaskPropertyCommand;
 import org.jbpm.services.task.commands.GetTasksByProcessInstanceIdCommand;
 import org.jbpm.services.task.commands.GetTasksByStatusByProcessInstanceIdCommand;
 import org.jbpm.services.task.commands.GetTasksByVariousFieldsCommand;
+import org.jbpm.services.task.commands.GetTasksCommand;
 import org.jbpm.services.task.commands.GetTasksOwnedCommand;
 import org.jbpm.services.task.commands.GetUserCommand;
 import org.jbpm.services.task.commands.GetUserInfoCommand;
@@ -92,6 +92,7 @@ import org.jbpm.services.task.impl.TaskContentRegistry;
 import org.jbpm.services.task.impl.TaskQueryBuilderImpl;
 import org.jbpm.services.task.rule.TaskRuleService;
 import org.kie.api.command.Command;
+import org.kie.api.search.SearchCriteria;
 import org.kie.api.task.TaskLifeCycleEventListener;
 import org.kie.api.task.model.Attachment;
 import org.kie.api.task.model.Comment;
@@ -763,6 +764,14 @@ public class CommandBasedTaskService implements InternalTaskService, EventServic
 	@Override
 	public void removeTaskEventListener(TaskLifeCycleEventListener listener) {
 		taskEventSupport.removeEventListener(listener);
+	}
+	
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
+		return executor.execute(new GetTasksCommand(searchCriteria));
 	}
 }
 
