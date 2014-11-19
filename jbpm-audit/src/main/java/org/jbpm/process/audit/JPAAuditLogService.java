@@ -143,17 +143,6 @@ public class JPAAuditLogService implements AuditLogService {
     }
 
     /* (non-Javadoc)
-     * @see org.jbpm.process.audit.AuditLogService#findActiveProcessInstances(java.lang.String)
-     */
-    @Override
-    public List<ProcessInstanceLog> findActiveProcessInstances() {
-        EntityManager em = getEntityManager();
-        Query query = em
-                .createQuery("FROM ProcessInstanceLog p WHERE p.end is null");
-        return executeQuery(query, em, ProcessInstanceLog.class);
-    }
-    
-    /* (non-Javadoc)
      * @see org.jbpm.process.audit.AuditLogService#findProcessInstances(java.lang.String)
      */
     @Override
@@ -339,8 +328,7 @@ public class JPAAuditLogService implements AuditLogService {
     /* (non-Javadoc)
      * @see org.jbpm.process.audit.AuditLogService#clear()
      */
-    @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public void clear() {
         EntityManager em = getEntityManager();
         Object newTx = joinTransaction(em);
@@ -384,8 +372,7 @@ public class JPAAuditLogService implements AuditLogService {
        persistenceStrategy.leaveTransaction(em, transaction);
     }
 
-    @SuppressWarnings("unchecked")
-	private <T> List<T> executeQuery(Query query, EntityManager em, Class<T> type) { 
+    private <T> List<T> executeQuery(Query query, EntityManager em, Class<T> type) { 
         Object newTx = joinTransaction(em);
         List<T> result;
         try { 
@@ -489,8 +476,7 @@ public class JPAAuditLogService implements AuditLogService {
        
     }
    
-    @SuppressWarnings("rawtypes")
-	private static void addCriteria( String listId, String fieldName, Class type ) { 
+    private static void addCriteria( String listId, String fieldName, Class type ) { 
         criteriaFields.put(listId, fieldName);
         criteriaFieldClasses.put(listId, type );
     }
@@ -534,8 +520,7 @@ public class JPAAuditLogService implements AuditLogService {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-	private static String createQuery(String queryBase, QueryData queryData, Map<String, Object> queryParams) { 
+    private static String createQuery(String queryBase, QueryData queryData, Map<String, Object> queryParams) { 
         // setup
         StringBuilder queryBuilder = new StringBuilder(queryBase);
         QueryAndParameterAppender queryAppender = new QueryAndParameterAppender(queryBuilder, queryParams, true);
@@ -737,8 +722,7 @@ public class JPAAuditLogService implements AuditLogService {
         }
     }
 
-    @SuppressWarnings("unchecked")
-	private <T> List<T> queryWithParameters(Map<String, Object> params, LockModeType lockMode, Class<T> clazz, Query query) {
+    private <T> List<T> queryWithParameters(Map<String, Object> params, LockModeType lockMode, Class<T> clazz, Query query) {
         if (lockMode != null) {
             query.setLockMode(lockMode);
         }
