@@ -8,12 +8,14 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -24,6 +26,7 @@ import org.kie.api.task.model.PeopleAssignments;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskData;
 import org.kie.api.task.model.User;
+import org.kie.internal.jaxb.StringKeyObjectValueMapXmlAdapter;
 import org.kie.internal.task.api.TaskModelProvider;
 import org.kie.internal.task.api.model.Deadlines;
 import org.kie.internal.task.api.model.Delegation;
@@ -85,7 +88,15 @@ public class JaxbTask implements InternalTask {
     @XmlElement(name="form-name")
     @XmlSchemaType(name="string")
     private String formName;
- 
+
+    /**
+     * Use map to return our self-defined table properties
+     * @author PTI
+     */
+    @XmlElement
+    @XmlJavaTypeAdapter(StringKeyObjectValueMapXmlAdapter.class)
+    private Map<String, Object> moreProperties = null;
+    
     public JaxbTask() { 
         // Default constructor
     }
@@ -116,6 +127,7 @@ public class JaxbTask implements InternalTask {
         this.name = ((InternalTask)task).getName();
         this.description = ((InternalTask)task).getDescription();
         this.subject = ((InternalTask)task).getSubject();
+        this.moreProperties = task.getMoreProperties();
     }
     
     @Override
@@ -328,6 +340,7 @@ public class JaxbTask implements InternalTask {
         ((InternalPeopleAssignments)peopleAssignments).setTaskStakeholders(new ArrayList<OrganizationalEntity>());
         ((InternalTask)taskImpl).setPeopleAssignments(peopleAssignments);        
         ((InternalTask)taskImpl).setTaskData(taskData);
+        ((InternalTask)taskImpl).setMoreProperties(this.moreProperties);;
        
         return taskImpl;
     }
@@ -417,7 +430,17 @@ public class JaxbTask implements InternalTask {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
 
+    /**
+     * @author PTI
+     */
+	public Map<String, Object> getMoreProperties() {
+		return moreProperties;
+	}
+	/**
+     * @author PTI
+     */
+	public void setMoreProperties(Map<String, Object> moreProperties) {
+		this.moreProperties = moreProperties;
+	}
 }

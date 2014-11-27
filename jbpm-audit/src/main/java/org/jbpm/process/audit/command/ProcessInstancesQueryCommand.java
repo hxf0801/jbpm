@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jbpm.process.audit.AuditLogService;
-import org.kie.api.runtime.manager.audit.ProcessInstanceLog;
+import org.jbpm.process.audit.ProcessInstanceLog;
 import org.kie.api.search.SearchCriteria;
 import org.kie.internal.command.Context;
 

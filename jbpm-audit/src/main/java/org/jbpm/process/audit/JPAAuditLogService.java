@@ -757,7 +757,7 @@ public class JPAAuditLogService implements AuditLogService {
      * @author PTI
      */
     @Override
-    public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
+    public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
         EntityManager em = getEntityManager();
         Object newTx = joinTransaction(em);
 
@@ -888,7 +888,7 @@ public class JPAAuditLogService implements AuditLogService {
 		
 		logger.info("Queried process instances::>>>> " + results.size());
 		closeEntityManager(em, newTx);
-        return convertListToInterfaceList(results, org.kie.api.runtime.manager.audit.ProcessInstanceLog.class);
+        return convertListToInterfaceList(results, ProcessInstanceLog.class);
 	}
 
     /**

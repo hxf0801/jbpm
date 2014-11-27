@@ -117,12 +117,12 @@ public class CommandBasedAuditLogService implements AuditLogService {
         return executor.execute(new AuditProcessInstanceLogQueryCommand(queryData));
     }
 
-	/**
+	/*
 	 * (non-Javadoc)
-	 * @see org.kie.api.runtime.manager.audit.AuditService#getProcessInstances(org.kie.api.search.SearchCriteria)
-	 * @author PTI
+	 * @see org.jbpm.process.audit.AuditLogService#getProcessInstances(org.kie.api.search.SearchCriteria)
+	 * @PTI
 	 */
-	public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
+    public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
 		return executor.execute(new ProcessInstancesQueryCommand(searchCriteria));
 	}
 
