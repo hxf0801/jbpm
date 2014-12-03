@@ -985,7 +985,7 @@ public class TaskQueryServiceImpl implements TaskQueryService {
     @Override
 	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
     	String GENERIC_TASKSUM_QUERY = 
-            "select distinct t.id, t.processInstanceId, t.name, t.subject, t.description,"
+            "select distinct t.id, t.processInstanceId, t.name as displayName, t.formname, t.subject, t.description,"
             + " t.status, t.priority, t.skipable, t.actualOwner_id,"
             + " t.createdBy_id, t.createdOn, t.activationTime, t.expirationTime, t.processId, t.processSessionId,"
             + " t.subTaskStrategy, t.parentId, p.EXTERNALID, propTable.site_code, propTable.service_code, propTable.company_code,"
@@ -1098,6 +1098,7 @@ public class TaskQueryServiceImpl implements TaskQueryService {
 				vo.setId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
 				vo.setProcessInstanceId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
 				vo.setName((String) row[++i]);
+				vo.setFormName((String) row[++i]);
 				vo.setSubject((String) row[++i]);
 				vo.setDescription((String)row[++i]);
 				vo.setStatus(Status.valueOf((String)row[++i]));
