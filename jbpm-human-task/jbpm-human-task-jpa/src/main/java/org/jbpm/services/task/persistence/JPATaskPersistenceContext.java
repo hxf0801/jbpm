@@ -70,6 +70,7 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 	
 	@Override
 	public Task findTask(Long taskId) {
+		long start = System.currentTimeMillis();
 		check();
 		TaskImpl task = null;
 		if (this.pessimisticLocking) {
@@ -78,39 +79,48 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 		} else {
 			task = this.em.find(TaskImpl.class, taskId);
 		}
-		TaskData taskData = task.getTaskData();
-		if (null != taskData) {
-			ProcessInstanceExtra processInstanceExtra = this.em
-					.find(ProcessInstanceExtra.class,
-							taskData.getProcessInstanceId());
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("site_code", processInstanceExtra.getSiteCode());
-			map.put("service_code", processInstanceExtra.getServiceCode());
-			map.put("company_code", processInstanceExtra.getCompanyCode());
-			map.put("process_group", processInstanceExtra.getProcessGroup());
-			map.put("item_key", processInstanceExtra.getItemKey());
-			map.put("item_type", processInstanceExtra.getItemType());
-			map.put("opt_type", processInstanceExtra.getOptType());
-			map.put("text1", processInstanceExtra.getText1());
-			map.put("text2", processInstanceExtra.getText2());
-			map.put("text3", processInstanceExtra.getText3());
-			map.put("text4", processInstanceExtra.getText4());
-			map.put("text5", processInstanceExtra.getText5());
-			map.put("char1", processInstanceExtra.getChar1());
-			map.put("char2", processInstanceExtra.getChar2());
-			map.put("money1", processInstanceExtra.getMoney1());
-			map.put("money2", processInstanceExtra.getMoney2());
-			map.put("money3", processInstanceExtra.getMoney3());
-			map.put("integer1", processInstanceExtra.getInteger1());
-			map.put("integer2", processInstanceExtra.getInteger2());
-			map.put("decimal1", processInstanceExtra.getDecimal1());
-			map.put("decimal2", processInstanceExtra.getDecimal2());
-			map.put("date1", processInstanceExtra.getDate1());
-			map.put("date2", processInstanceExtra.getDate2());
-			map.put("date3", processInstanceExtra.getDate3());
-			map.put("timestamp1", processInstanceExtra.getTimestamp1());
-			map.put("timestamp2", processInstanceExtra.getTimestamp2());
-			task.setMoreProperties(map);
+		if (null != task) {
+			TaskData taskData = task.getTaskData();
+			if (null != taskData) {
+				ProcessInstanceExtra processInstanceExtra =
+					this.em.find(ProcessInstanceExtra.class, taskData.getProcessInstanceId());
+				if (null != processInstanceExtra) {
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("site_code", processInstanceExtra.getSiteCode());
+					map.put("service_code", processInstanceExtra.getServiceCode());
+					map.put("company_code", processInstanceExtra.getCompanyCode());
+					map.put("process_group", processInstanceExtra.getProcessGroup());
+					map.put("item_key", processInstanceExtra.getItemKey());
+					map.put("item_type", processInstanceExtra.getItemType());
+					map.put("opt_type", processInstanceExtra.getOptType());
+					map.put("text1", processInstanceExtra.getText1());
+					map.put("text2", processInstanceExtra.getText2());
+					map.put("text3", processInstanceExtra.getText3());
+					map.put("text4", processInstanceExtra.getText4());
+					map.put("text5", processInstanceExtra.getText5());
+					map.put("char1", processInstanceExtra.getChar1());
+					map.put("char2", processInstanceExtra.getChar2());
+					map.put("money1", processInstanceExtra.getMoney1());
+					map.put("money2", processInstanceExtra.getMoney2());
+					map.put("money3", processInstanceExtra.getMoney3());
+					map.put("integer1", processInstanceExtra.getInteger1());
+					map.put("integer2", processInstanceExtra.getInteger2());
+					map.put("decimal1", processInstanceExtra.getDecimal1());
+					map.put("decimal2", processInstanceExtra.getDecimal2());
+					map.put("date1", processInstanceExtra.getDate1());
+					map.put("date2", processInstanceExtra.getDate2());
+					map.put("date3", processInstanceExtra.getDate3());
+					map.put("timestamp1", processInstanceExtra.getTimestamp1());
+					map.put("timestamp2", processInstanceExtra.getTimestamp2());
+					task.setMoreProperties(map);
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("find the specified task with extra table >>> " + task.getMoreProperties());
+			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(">>>> ******* get task costs time(milliseconds): " + (System.currentTimeMillis() - start));
 		}
 		return task;
 	}
