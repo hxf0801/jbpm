@@ -1161,4 +1161,9 @@ public class TaskQueryServiceImpl implements TaskQueryService {
 		logger.info("Queried tasks::" + results.size());
 		return results;
 	}
+    
+	@Override
+	public void updateProcessExtra(Long taskId, Map<String, Object> data) {
+		persistenceContext.updateProcessExtra(taskId, data);
+	}
 }

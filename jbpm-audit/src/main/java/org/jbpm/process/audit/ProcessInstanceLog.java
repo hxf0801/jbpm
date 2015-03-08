@@ -28,6 +28,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.jbpm.process.audit.event.AuditEvent;
 import org.jbpm.process.audit.event.AuditEventBuilder;
@@ -90,7 +91,8 @@ public class ProcessInstanceLog implements Serializable, AuditEvent, org.kie.api
      * these fields are custom
      * @author PTI
      */
-    private transient Map<String, Object> moreProperties;    
+    @Transient
+    private Map<String, Object> moreProperties;
     public ProcessInstanceLog() {
     }
     

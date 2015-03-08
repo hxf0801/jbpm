@@ -37,6 +37,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.jbpm.services.task.utils.CollectionUtils;
@@ -118,7 +119,8 @@ public class TaskImpl implements InternalTask {
 	 * 
 	 * @author PTI
 	 */
-	private transient Map<String, Object> moreProperties;
+	@Transient
+	private Map<String, Object> moreProperties;
 
 	public TaskImpl() {
 	}

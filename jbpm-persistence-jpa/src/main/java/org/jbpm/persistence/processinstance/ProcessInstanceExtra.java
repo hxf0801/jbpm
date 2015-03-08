@@ -1,6 +1,7 @@
 package org.jbpm.persistence.processinstance;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
@@ -8,130 +9,296 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "ProcInstanceProp")
 public class ProcessInstanceExtra implements Serializable {
-	private static final long serialVersionUID = -4559324173125044174L;
+	/**
+	 * default serial version UID
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
+	 * internal defined column prefix with which variables starting should be
+	 * saved in this extra table. Currently the process variable table also
+	 * keeps one copy
+	 */
+	public static final String COLUMN_PREFIX = "EXT_";
 
 	@Id
-	@Column(name="process_instance_id")
+	@Column(name = "process_instance_id")
 	private Long processInstanceId;
-	
+
 	@Column(name = "site_code")
 	private String siteCode;
-	
+
 	@Column(name = "service_code")
 	private String serviceCode;
-	
+
 	@Column(name = "company_code")
 	private String companyCode;
-	
+
 	@Column(name = "process_group")
 	private String processGroup;
-	
+
 	@Column(name = "item_key")
 	private String itemKey;
-	
+
 	@Column(name = "item_type")
 	private String itemType;
-	
+
 	@Column(name = "opt_type")
 	private String optType;
-	
+
 	@Column(name = "text1")
 	private String text1;
-	
+
 	@Column(name = "text2")
 	private String text2;
-	
+
 	@Column(name = "text3")
 	private String text3;
-	
+
 	@Column(name = "text4")
 	private String text4;
-	
+
 	@Column(name = "text5")
 	private String text5;
-	
-	@Column(name = "char1",length=1)
+
+	@Column(name = "char1", length = 1)
 	private String char1;
-	
-	@Column(name = "char2",length=1)
+
+	@Column(name = "char2", length = 1)
 	private String char2;
-	
-	@Column(name = "money1")
-	private Double money1;
-	
-	@Column(name = "money2")
-	private Double money2;
-	
-	@Column(name = "money3")
-	private Double money3;
-	
+
+	@Column(name = "money1", precision = 20, scale = 3)
+	private BigDecimal money1;
+
+	@Column(name = "money2", precision = 20, scale = 3)
+	private BigDecimal money2;
+
+	@Column(name = "money3", precision = 20, scale = 3)
+	private BigDecimal money3;
+
 	@Column(name = "integer1")
 	private Long integer1;
-	
+
 	@Column(name = "integer2")
 	private Long integer2;
-	
-	@Column(name = "decimal1")
-	private Long decimal1;
-	
-	@Column(name = "decimal2")
-	private Long decimal2;
-	
+
+	@Column(name = "decimal1", precision = 19, scale = 9)
+	private BigDecimal decimal1;
+
+	@Column(name = "decimal2", precision = 19, scale = 9)
+	private BigDecimal decimal2;
+
+	@Temporal(TemporalType.DATE)
 	@Column(name = "date1")
 	private Date date1;
-	
+
+	@Temporal(TemporalType.DATE)
 	@Column(name = "date2")
 	private Date date2;
-	
+
+	@Temporal(TemporalType.DATE)
 	@Column(name = "date3")
 	private Date date3;
-	
+
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "timestamp1")
 	private Date timestamp1;
-	
+
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "timestamp2")
 	private Date timestamp2;
 	
-	public ProcessInstanceExtra(){
-		
+	@Column(name = "wfe_client_id")
+	private String wfeClientIdentifier;
+
+	public ProcessInstanceExtra() {
+
 	}
 
+	/**
+	 * Construct a new extra table object based on a given map of value
+	 * 
+	 * @param id
+	 *            - Long, process instance id
+	 * @param parameters
+	 *            - Map
+	 */
 	public ProcessInstanceExtra(Long id, Map<String, Object> parameters) {
 		this.processInstanceId = id;
 		if (null != parameters) {
-		    String COLUMN_PREFIX = "EXT_";
-            this.siteCode = (String) parameters.get(COLUMN_PREFIX + "site_code");
-            this.serviceCode = (String) parameters.get(COLUMN_PREFIX + "service_code");
-            this.companyCode = (String) parameters.get(COLUMN_PREFIX + "company_code");
-            this.processGroup = (String) parameters.get(COLUMN_PREFIX + "process_group");
-            this.itemKey = (String) parameters.get(COLUMN_PREFIX + "item_key");
-            this.itemType = (String) parameters.get(COLUMN_PREFIX + "item_type");
-			this.optType = (String) parameters.get(COLUMN_PREFIX + "opt_type");
+			this.siteCode = (String)parameters.get(COLUMN_PREFIX + "site_code");
+			this.serviceCode = (String)parameters.get(COLUMN_PREFIX + "service_code");
+			this.companyCode = (String)parameters.get(COLUMN_PREFIX + "company_code");
+			this.processGroup = (String)parameters.get(COLUMN_PREFIX + "process_group");
+			this.itemKey = (String)parameters.get(COLUMN_PREFIX + "item_key");
+			this.itemType = (String)parameters.get(COLUMN_PREFIX + "item_type");
+			this.optType = (String)parameters.get(COLUMN_PREFIX + "opt_type");
 
-            this.text1 = (String) parameters.get(COLUMN_PREFIX + "text1");
-            this.text2 = (String) parameters.get(COLUMN_PREFIX + "text2");
-            this.text3 = (String) parameters.get(COLUMN_PREFIX + "text3");
-            this.text4 = (String) parameters.get(COLUMN_PREFIX + "text4");
-            this.text5 = (String) parameters.get(COLUMN_PREFIX + "text5");
-            this.char1 = (String) parameters.get(COLUMN_PREFIX + "char1");
-            this.char2 = (String) parameters.get(COLUMN_PREFIX + "char2");
-            this.money1 = (Double) parameters.get(COLUMN_PREFIX + "money1");
-            this.money2 = (Double) parameters.get(COLUMN_PREFIX + "money2");
-            this.money3 = (Double) parameters.get(COLUMN_PREFIX + "money3");
-            this.integer1 = (Long) parameters.get(COLUMN_PREFIX + "integer1");
-            this.integer2 = (Long) parameters.get(COLUMN_PREFIX + "integer2");
-            this.decimal1 = (Long) parameters.get(COLUMN_PREFIX + "decimal1");
-            this.decimal2 = (Long) parameters.get(COLUMN_PREFIX + "decimal2");
-            this.date1 = (Date) parameters.get(COLUMN_PREFIX + "date1");
-            this.date2 = (Date) parameters.get(COLUMN_PREFIX + "date2");
-            this.date3 = (Date) parameters.get(COLUMN_PREFIX + "date3");
-            this.timestamp1 = (Date) parameters.get(COLUMN_PREFIX + "timestamp1");
-            this.timestamp2 = (Date) parameters.get(COLUMN_PREFIX + "timestamp2");
+			this.text1 = (String)parameters.get(COLUMN_PREFIX + "text1");
+			this.text2 = (String)parameters.get(COLUMN_PREFIX + "text2");
+			this.text3 = (String)parameters.get(COLUMN_PREFIX + "text3");
+			this.text4 = (String)parameters.get(COLUMN_PREFIX + "text4");
+			this.text5 = (String)parameters.get(COLUMN_PREFIX + "text5");
+			this.char1 = (String)parameters.get(COLUMN_PREFIX + "char1");
+			this.char2 = (String)parameters.get(COLUMN_PREFIX + "char2");
+			
+			if (null != parameters.get(COLUMN_PREFIX + "money1")) {
+				this.money1 = this.convertTo(parameters.get(COLUMN_PREFIX + "money1"));
+			}
+			if (null != parameters.get(COLUMN_PREFIX + "money2")) {
+				this.money2 = this.convertTo(parameters.get(COLUMN_PREFIX + "money2"));
+			}
+			if (null != parameters.get(COLUMN_PREFIX + "money3")) {
+				this.money3 = this.convertTo(parameters.get(COLUMN_PREFIX + "money3"));
+			}
+			
+			this.integer1 = (Long)parameters.get(COLUMN_PREFIX + "integer1");
+			this.integer2 = (Long)parameters.get(COLUMN_PREFIX + "integer2");
+			if (null != parameters.get(COLUMN_PREFIX + "decimal1")) {
+				this.decimal1 = this.convertTo(parameters.get(COLUMN_PREFIX + "decimal1"));
+			}
+			if (null != parameters.get(COLUMN_PREFIX + "decimal2")) {
+				this.decimal2 = this.convertTo(parameters.get(COLUMN_PREFIX + "decimal2"));
+			}
+			this.date1 = (Date)parameters.get(COLUMN_PREFIX + "date1");
+			this.date2 = (Date)parameters.get(COLUMN_PREFIX + "date2");
+			this.date3 = (Date)parameters.get(COLUMN_PREFIX + "date3");
+			this.timestamp1 = (Date)parameters.get(COLUMN_PREFIX + "timestamp1");
+			this.timestamp2 = (Date)parameters.get(COLUMN_PREFIX + "timestamp2");
+			this.wfeClientIdentifier = (String)parameters.get(COLUMN_PREFIX + "wfe_client_id");
 		}
+	}
+
+	/**
+	 * Update own state based on given values. It will be called to persist the
+	 * update to the extra table when completing a task. So don't forget to add
+	 * it here when adding a new field
+	 * 
+	 * @param updatedParameters
+	 *            - Map
+	 */
+	public void updateState(Map<String, Object> updatedParameters) {
+		if (null != updatedParameters) {
+			if (null != updatedParameters.get(COLUMN_PREFIX + "site_code")) {
+				this.siteCode = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "site_code");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "service_code")) {
+				this.serviceCode = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "service_code");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "company_code")) {
+				this.companyCode = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "company_code");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "process_group")) {
+				this.processGroup = (String) updatedParameters
+						.get(COLUMN_PREFIX + "process_group");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "item_key")) {
+				this.itemKey = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "item_key");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "item_type")) {
+				this.itemType = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "item_type");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "opt_type")) {
+				this.optType = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "opt_type");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "text1")) {
+				this.text1 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "text1");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "text2")) {
+				this.text2 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "text2");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "text3")) {
+				this.text3 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "text3");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "text4")) {
+				this.text4 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "text4");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "text5")) {
+				this.text5 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "text5");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "char1")) {
+				this.char1 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "char1");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "char2")) {
+				this.char2 = (String) updatedParameters.get(COLUMN_PREFIX
+						+ "char2");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "money1")) {
+				this.money1 = this.convertTo(updatedParameters
+						.get(COLUMN_PREFIX + "money1"));
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "money2")) {
+				this.money2 = this.convertTo(updatedParameters
+						.get(COLUMN_PREFIX + "money2"));
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "money3")) {
+				this.money3 = this.convertTo(updatedParameters
+						.get(COLUMN_PREFIX + "money3"));
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "integer1")) {
+				this.integer1 = (Long) updatedParameters.get(COLUMN_PREFIX
+						+ "integer1");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "integer2")) {
+				this.integer2 = (Long) updatedParameters.get(COLUMN_PREFIX
+						+ "integer2");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "decimal1")) {
+				this.decimal1 = this.convertTo(updatedParameters
+						.get(COLUMN_PREFIX + "decimal1"));
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "decimal2")) {
+				this.decimal2 = this.convertTo(updatedParameters
+						.get(COLUMN_PREFIX + "decimal2"));
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "date1")) {
+				this.date1 = (Date) updatedParameters.get(COLUMN_PREFIX
+						+ "date1");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "date2")) {
+				this.date2 = (Date) updatedParameters.get(COLUMN_PREFIX
+						+ "date2");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "date3")) {
+				this.date3 = (Date) updatedParameters.get(COLUMN_PREFIX
+						+ "date3");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "timestamp1")) {
+				this.timestamp1 = (Date) updatedParameters.get(COLUMN_PREFIX
+						+ "timestamp1");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "timestamp2")) {
+				this.timestamp2 = (Date) updatedParameters.get(COLUMN_PREFIX
+						+ "timestamp2");
+			}
+			if (null != updatedParameters.get(COLUMN_PREFIX + "wfe_client_id")) {
+				this.wfeClientIdentifier = (String) updatedParameters
+						.get(COLUMN_PREFIX + "wfe_client_id");
+			}
+		}
+	}
+
+	private BigDecimal convertTo(Object obj) {
+		if (obj instanceof BigDecimal)
+			return (BigDecimal)obj;
+		return new BigDecimal(obj.toString());
 	}
 
 	public Long getProcessInstanceId() {
@@ -141,10 +308,11 @@ public class ProcessInstanceExtra implements Serializable {
 	public void setProcessInstanceId(Long processInstanceId) {
 		this.processInstanceId = processInstanceId;
 	}
-	
-	
+
 	/**
-	 * Check if this object is valid when persisting it. Only insert valid object.
+	 * Check if this object is valid when persisting it. Only insert valid
+	 * object.
+	 * 
 	 * @return boolean
 	 */
 	public boolean isValid() {
@@ -182,6 +350,7 @@ public class ProcessInstanceExtra implements Serializable {
 		sb.append("date3:" + (null != date3 ? date3 : "") + ", ");
 		sb.append("timestamp1:" + (null != timestamp1 ? timestamp1 : "") + ", ");
 		sb.append("timestamp2:" + (null != timestamp2 ? timestamp2 : "") + ", ");
+		sb.append("wfeClientIdentifier:" + (null != wfeClientIdentifier ? wfeClientIdentifier : ""));
 		sb.append("}");
 		return sb.toString();
 	}
@@ -298,27 +467,48 @@ public class ProcessInstanceExtra implements Serializable {
 		this.char2 = char2;
 	}
 
-	public Double getMoney1() {
+	/**
+	 * @return the money1
+	 */
+	public BigDecimal getMoney1() {
 		return money1;
 	}
 
-	public void setMoney1(Double money1) {
+	/**
+	 * @param money1
+	 *        the money1 to set
+	 */
+	public void setMoney1(BigDecimal money1) {
 		this.money1 = money1;
 	}
 
-	public Double getMoney2() {
+	/**
+	 * @return the money2
+	 */
+	public BigDecimal getMoney2() {
 		return money2;
 	}
 
-	public void setMoney2(Double money2) {
+	/**
+	 * @param money2
+	 *        the money2 to set
+	 */
+	public void setMoney2(BigDecimal money2) {
 		this.money2 = money2;
 	}
 
-	public Double getMoney3() {
+	/**
+	 * @return the money3
+	 */
+	public BigDecimal getMoney3() {
 		return money3;
 	}
 
-	public void setMoney3(Double money3) {
+	/**
+	 * @param money3
+	 *        the money3 to set
+	 */
+	public void setMoney3(BigDecimal money3) {
 		this.money3 = money3;
 	}
 
@@ -338,19 +528,33 @@ public class ProcessInstanceExtra implements Serializable {
 		this.integer2 = integer2;
 	}
 
-	public Long getDecimal1() {
+	/**
+	 * @return the decimal1
+	 */
+	public BigDecimal getDecimal1() {
 		return decimal1;
 	}
 
-	public void setDecimal1(Long decimal1) {
+	/**
+	 * @param decimal1
+	 *        the decimal1 to set
+	 */
+	public void setDecimal1(BigDecimal decimal1) {
 		this.decimal1 = decimal1;
 	}
 
-	public Long getDecimal2() {
+	/**
+	 * @return the decimal2
+	 */
+	public BigDecimal getDecimal2() {
 		return decimal2;
 	}
 
-	public void setDecimal2(Long decimal2) {
+	/**
+	 * @param decimal2
+	 *        the decimal2 to set
+	 */
+	public void setDecimal2(BigDecimal decimal2) {
 		this.decimal2 = decimal2;
 	}
 
@@ -393,5 +597,12 @@ public class ProcessInstanceExtra implements Serializable {
 	public void setTimestamp2(Date timestamp2) {
 		this.timestamp2 = timestamp2;
 	}
-	
+
+	public String getWfeClientIdentifier() {
+		return wfeClientIdentifier;
+	}
+
+	public void setWfeClientIdentifier(String wfeClientIdentifier) {
+		this.wfeClientIdentifier = wfeClientIdentifier;
+	}
 }

@@ -83,7 +83,7 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 			TaskData taskData = task.getTaskData();
 			if (null != taskData) {
 				ProcessInstanceExtra processInstanceExtra =
-					this.em.find(ProcessInstanceExtra.class, taskData.getProcessInstanceId());
+						doInternalFindProcessInstanceExtra(taskData.getProcessInstanceId());
 				if (null != processInstanceExtra) {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("site_code", processInstanceExtra.getSiteCode());
@@ -688,5 +688,50 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 			}
 		}
 		return ((BigDecimal)query.getSingleResult()).intValue();
+	}
+
+	@Override
+	public void updateProcessExtra(Long taskId, Map<String, Object> data) {
+		check();
+		TaskImpl task = null;
+		if (this.pessimisticLocking) {
+			task = this.em.find(TaskImpl.class, taskId,
+					LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		} else {
+			task = this.em.find(TaskImpl.class, taskId);
+		}
+		if (null != task) {
+			TaskData taskData = task.getTaskData();
+			if (null != taskData) {
+				ProcessInstanceExtra processInstanceExtra =
+					doInternalFindProcessInstanceExtra(taskData.getProcessInstanceId());
+				if (null != processInstanceExtra) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("updating extra table >>> " + processInstanceExtra);
+					}
+					processInstanceExtra.updateState(data);
+					this.em.merge(processInstanceExtra);
+					if (logger.isTraceEnabled()) {
+						logger.trace("updated extra table >>> " + processInstanceExtra);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Find extra table object in a method
+	 * 
+	 * @param processInstanceId
+	 *        -long, process instance id
+	 * @return ProcessInstanceExtra
+	 * @author PTI
+	 */
+	private ProcessInstanceExtra doInternalFindProcessInstanceExtra(long processInstanceId) {
+		if (this.pessimisticLocking) {
+			return this.em
+					.find(ProcessInstanceExtra.class, processInstanceId, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		}
+		return this.em.find(ProcessInstanceExtra.class, processInstanceId);
 	}
 }
