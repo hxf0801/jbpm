@@ -30,6 +30,7 @@ import org.jbpm.services.ejb.TaskServiceEJBLocal;
 import org.jbpm.services.task.HumanTaskConfigurator;
 import org.jbpm.services.task.HumanTaskServiceFactory;
 import org.kie.api.command.Command;
+import org.kie.api.search.SearchCriteria;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.UserGroupCallback;
 import org.kie.api.task.model.Attachment;
@@ -670,6 +671,14 @@ public class TaskServiceEJBImpl implements InternalTaskService, TaskService, Tas
     public TaskQueryBuilder taskQuery(String userId) {
         throw new UnsupportedOperationException("This method is not supported, use UserTaskService instead");
     }
+
+    /**
+     * @author PTI
+     */
+	@Override
+	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
+		return delegate.getTasks(searchCriteria);
+	}
 
 
 }

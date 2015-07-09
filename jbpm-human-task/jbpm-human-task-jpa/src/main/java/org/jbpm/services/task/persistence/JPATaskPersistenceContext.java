@@ -70,12 +70,58 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 	
 	@Override
 	public Task findTask(Long taskId) {
+		long start = System.currentTimeMillis();
 		check();
-		Task task = null;
-		if( this.pessimisticLocking ) { 
-			task = this.em.find( TaskImpl.class, taskId, LockModeType.PESSIMISTIC_FORCE_INCREMENT );
-        }
-		task = this.em.find( TaskImpl.class, taskId );
+		TaskImpl task = null;
+		if (this.pessimisticLocking) {
+			task = this.em.find(TaskImpl.class, taskId,
+					LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		} else {
+			task = this.em.find(TaskImpl.class, taskId);
+		}
+		if (null != task) {
+			TaskData taskData = task.getTaskData();
+			if (null != taskData) {
+				ProcessInstanceExtra processInstanceExtra =
+						doInternalFindProcessInstanceExtra(taskData.getProcessInstanceId());
+				if (null != processInstanceExtra) {
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("site_code", processInstanceExtra.getSiteCode());
+					map.put("service_code", processInstanceExtra.getServiceCode());
+					map.put("company_code", processInstanceExtra.getCompanyCode());
+					map.put("process_group", processInstanceExtra.getProcessGroup());
+					map.put("item_key", processInstanceExtra.getItemKey());
+					map.put("item_type", processInstanceExtra.getItemType());
+					map.put("opt_type", processInstanceExtra.getOptType());
+					map.put("text1", processInstanceExtra.getText1());
+					map.put("text2", processInstanceExtra.getText2());
+					map.put("text3", processInstanceExtra.getText3());
+					map.put("text4", processInstanceExtra.getText4());
+					map.put("text5", processInstanceExtra.getText5());
+					map.put("char1", processInstanceExtra.getChar1());
+					map.put("char2", processInstanceExtra.getChar2());
+					map.put("money1", processInstanceExtra.getMoney1());
+					map.put("money2", processInstanceExtra.getMoney2());
+					map.put("money3", processInstanceExtra.getMoney3());
+					map.put("integer1", processInstanceExtra.getInteger1());
+					map.put("integer2", processInstanceExtra.getInteger2());
+					map.put("decimal1", processInstanceExtra.getDecimal1());
+					map.put("decimal2", processInstanceExtra.getDecimal2());
+					map.put("date1", processInstanceExtra.getDate1());
+					map.put("date2", processInstanceExtra.getDate2());
+					map.put("date3", processInstanceExtra.getDate3());
+					map.put("timestamp1", processInstanceExtra.getTimestamp1());
+					map.put("timestamp2", processInstanceExtra.getTimestamp2());
+					task.setMoreProperties(map);
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("find the specified task with extra table >>> " + task.getMoreProperties());
+			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(">>>> ******* get task costs time(milliseconds): " + (System.currentTimeMillis() - start));
+		}
 		return task;
 	}
 
@@ -594,5 +640,130 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 		}
 		return null;
 	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Object[]> nativequeryWithParametersInTransaction(String queryString, Map<String, Object> params) {
+		check();
+		Query query = this.em.createNativeQuery(queryString);
 
+		if (params != null && !params.isEmpty()) {
+			for (String name : params.keySet()) {
+				if (FIRST_RESULT.equals(name)) {
+					query.setFirstResult((Integer) params.get(name));
+					continue;
+				}
+				if (MAX_RESULTS.equals(name)) {
+					query.setMaxResults((Integer) params.get(name));
+					continue;
+				}
+				if (FLUSH_MODE.equals(name)) {
+					query.setFlushMode(FlushModeType.valueOf((String) params.get(name)));
+					continue;
+				}
+				
+				int position = 0;
+				try {
+					position = Integer.parseInt(name);
+				} catch (Exception e) {
+					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					position = 0;
+				}
+				if (position > 1) {
+				    Object o = params.get(name);
+				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+                    if (o instanceof XMLGregorianCalendar) {
+                        query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
+                    } else {
+                        query.setParameter(position, o);
+                    }
+				} else {
+					query.setParameter(name, params.get(name));
+				}
+			}
+		}
+		return query.getResultList();
+	}
+
+	@Override
+	public int nativequeryTotalRows(String queryString, Map<String, Object> params) {
+		check();
+		Query query = this.em.createNativeQuery(queryString);
+
+		if (params != null && !params.isEmpty()) {
+			for (String name : params.keySet()) {
+				if (FLUSH_MODE.equals(name)) {
+					query.setFlushMode(FlushModeType.valueOf((String) params.get(name)));
+					continue;
+				}
+				if (MAX_RESULTS.equals(name) || FIRST_RESULT.equals(name)) {
+					continue;
+				}
+				
+				int position = 0;
+				try {
+					position = Integer.parseInt(name);
+				} catch (Exception e) {
+					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					position = 0;
+				}
+				if (position > 1) {
+				    Object o = params.get(name);
+				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+                    if (o instanceof XMLGregorianCalendar) {
+                        query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
+                    } else {
+                        query.setParameter(position, o);
+                    }
+				} else {
+					query.setParameter(name, params.get(name));
+				}
+			}
+		}
+		return ((BigDecimal)query.getSingleResult()).intValue();
+	}
+
+	@Override
+	public void updateProcessExtra(Long taskId, Map<String, Object> data) {
+		check();
+		TaskImpl task = null;
+		if (this.pessimisticLocking) {
+			task = this.em.find(TaskImpl.class, taskId,
+					LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		} else {
+			task = this.em.find(TaskImpl.class, taskId);
+		}
+		if (null != task) {
+			TaskData taskData = task.getTaskData();
+			if (null != taskData) {
+				ProcessInstanceExtra processInstanceExtra =
+					doInternalFindProcessInstanceExtra(taskData.getProcessInstanceId());
+				if (null != processInstanceExtra) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("updating extra table >>> " + processInstanceExtra);
+					}
+					processInstanceExtra.updateState(data);
+					this.em.merge(processInstanceExtra);
+					if (logger.isTraceEnabled()) {
+						logger.trace("updated extra table >>> " + processInstanceExtra);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Find extra table object in a method
+	 * 
+	 * @param processInstanceId
+	 *        -long, process instance id
+	 * @return ProcessInstanceExtra
+	 * @author PTI
+	 */
+	private ProcessInstanceExtra doInternalFindProcessInstanceExtra(long processInstanceId) {
+		if (this.pessimisticLocking) {
+			return this.em
+					.find(ProcessInstanceExtra.class, processInstanceId, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+		}
+		return this.em.find(ProcessInstanceExtra.class, processInstanceId);
+	}
 }

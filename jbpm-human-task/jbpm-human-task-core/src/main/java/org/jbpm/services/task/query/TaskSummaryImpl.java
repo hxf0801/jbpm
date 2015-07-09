@@ -20,6 +20,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.kie.api.task.model.Status;
 import org.kie.api.task.model.User;
@@ -52,6 +53,14 @@ public class TaskSummaryImpl implements InternalTaskSummary {
     private long parentId;
     private List<String> potentialOwners;
     private boolean quickTaskSummary;
+    /**
+     * @author PTI
+     */
+    private Map<String, Object> moreProperties;
+	/**
+     * @author PTI
+     */
+    private String formName = "";
 
     public TaskSummaryImpl(long id,
             String name,
@@ -248,6 +257,13 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         }
         
         out.writeBoolean(quickTaskSummary);
+        
+        if (formName != null) {
+            out.writeBoolean(true);
+            out.writeUTF(formName);
+        } else {
+            out.writeBoolean(false);
+        }
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -321,6 +337,10 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         }
         
         quickTaskSummary = in.readBoolean();
+        
+        if (in.readBoolean()) {
+            formName = in.readUTF();
+        }
     }
 
     public Long getId() {
@@ -498,6 +518,8 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         result = prime * result + ((subject == null) ? 0 : subject.hashCode());
         result = prime * result + ((processId == null) ? 0 : processId.hashCode());
         result = prime * result + (int) (processSessionId ^ (processSessionId >>> 32));
+        result = prime * result + ((formName == null) ? 0 : formName.hashCode());
+        result = prime * result + ((moreProperties == null) ? 0 : moreProperties.hashCode());
         return result;
     }
 
@@ -605,6 +627,20 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         if (processSessionId != other.processSessionId) {
             return false;
         }
+        if (formName == null) {
+            if (other.formName != null) {
+                return false;
+            }
+        } else if (!formName.equals(other.formName)) {
+            return false;
+        }
+        if (moreProperties == null) {
+            if (other.moreProperties != null) {
+                return false;
+            }
+        } else if (!moreProperties.equals(other.moreProperties)) {
+            return false;
+        }
         return true;
     }
 
@@ -628,4 +664,29 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         return deploymentId;
     }
 
+
+	public void setCreatedById(String createdById) {
+		this.createdById = createdById;
+	}
+
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
+	}
+
+    public Map<String, Object> getMoreProperties() {
+        return moreProperties;
+    }
+
+    public void setMoreProperties(Map<String, Object> moreProperties) {
+        this.moreProperties = moreProperties;
+    }
+
+	public String getFormName() {
+		return formName;
+	}
+
+	public void setFormName(String formName) {
+		this.formName = formName;
+	}
+    
 }

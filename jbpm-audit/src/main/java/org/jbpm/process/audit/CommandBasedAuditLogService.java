@@ -13,6 +13,7 @@ import org.jbpm.process.audit.command.FindProcessInstancesCommand;
 import org.jbpm.process.audit.command.FindSubProcessInstancesCommand;
 import org.jbpm.process.audit.command.FindVariableInstancesByNameCommand;
 import org.jbpm.process.audit.command.FindVariableInstancesCommand;
+import org.jbpm.process.audit.command.ProcessInstancesQueryCommand;
 import org.jbpm.process.audit.query.NodeInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.NodeInstanceLogDeleteBuilderImpl;
 import org.jbpm.process.audit.query.ProcInstLogQueryBuilderImpl;
@@ -20,6 +21,7 @@ import org.jbpm.process.audit.query.ProcessInstanceLogDeleteBuilderImpl;
 import org.jbpm.process.audit.query.VarInstLogQueryBuilderImpl;
 import org.jbpm.process.audit.query.VarInstanceLogDeleteBuilderImpl;
 import org.kie.api.runtime.CommandExecutor;
+import org.kie.api.search.SearchCriteria;
 import org.kie.internal.query.data.QueryData;
 import org.kie.internal.runtime.manager.audit.query.NodeInstanceLogDeleteBuilder;
 import org.kie.internal.runtime.manager.audit.query.NodeInstanceLogQueryBuilder;
@@ -39,11 +41,6 @@ public class CommandBasedAuditLogService implements AuditLogService {
     @Override
     public List<ProcessInstanceLog> findProcessInstances() {
         return executor.execute(new FindProcessInstancesCommand());
-    }
-
-    @Override
-    public List<ProcessInstanceLog> findActiveProcessInstances() {
-        return executor.execute(new FindActiveProcessInstancesCommand());
     }
 
     @Override
@@ -140,6 +137,15 @@ public class CommandBasedAuditLogService implements AuditLogService {
     public List<org.kie.api.runtime.manager.audit.ProcessInstanceLog> queryProcessInstanceLogs( QueryData queryData ) {
         return executor.execute(new AuditProcessInstanceLogQueryCommand(queryData));
     }
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jbpm.process.audit.AuditLogService#getProcessInstances(org.kie.api.search.SearchCriteria)
+	 * @PTI
+	 */
+    public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
+		return executor.execute(new ProcessInstancesQueryCommand(searchCriteria));
+	}
 
     @Override
     public void clear() {

@@ -259,6 +259,13 @@ public class TaskDataImpl implements InternalTaskData {
             out.writeBoolean(false);
         }
         
+		if (deploymentId != null) {
+			out.writeBoolean(true);
+			out.writeUTF(deploymentId);
+		} else {
+			out.writeBoolean(false);
+		}
+        
         if (processSessionId != -1) {
             out.writeBoolean(true);
             out.writeLong(processSessionId);
@@ -361,6 +368,10 @@ public class TaskDataImpl implements InternalTaskData {
         if (in.readBoolean()) {
             processId = in.readUTF();
         }
+        
+		if(in.readBoolean()) {
+			deploymentId = in.readUTF();
+		}
         
         if (in.readBoolean()) {
             processSessionId = in.readLong();

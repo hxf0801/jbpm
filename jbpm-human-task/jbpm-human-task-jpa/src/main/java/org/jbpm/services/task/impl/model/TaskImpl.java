@@ -21,6 +21,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -36,6 +37,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.jbpm.services.task.utils.CollectionUtils;
@@ -111,8 +113,14 @@ public class TaskImpl implements InternalTask {
     
     @Basic
     private Short archived = 0;
-    
 
+    /**
+     * these fields are custom
+     *
+     * @author PTI
+     */
+    @Transient
+    private Map<String, Object> moreProperties;
     public TaskImpl() {
     }
 
@@ -164,7 +172,7 @@ public class TaskImpl implements InternalTask {
         
         if ( peopleAssignments != null ) {
             out.writeBoolean( true );
-            peopleAssignments.writeExternal( out );
+            peopleAssignments.writeExternal(out);
         } else {
             out.writeBoolean( false );
         }
@@ -189,9 +197,17 @@ public class TaskImpl implements InternalTask {
         } else {
             out.writeBoolean( false );
         }
-
+        
+        if (moreProperties != null) {
+            out.writeBoolean(true);
+            out.writeObject(moreProperties);
+        } else {
+            out.writeBoolean(false);
+        }
+        
     }
 
+    @SuppressWarnings("unchecked")
     public void readExternal(ObjectInput in) throws IOException,
                                             ClassNotFoundException {
         id = in.readLong();
@@ -230,6 +246,10 @@ public class TaskImpl implements InternalTask {
             deadlines.readExternal( in );
         }
 
+        if (in.readBoolean()) {
+            moreProperties = (Map<String, Object>) in.readObject();
+        }
+        
     }
     
     public Long getId() {
@@ -354,6 +374,8 @@ public class TaskImpl implements InternalTask {
         result = prime * result + ((delegation == null) ? 0 : delegation.hashCode());
         result = prime * result + ((taskData == null) ? 0 : taskData.hashCode());
         result = prime * result + ((deadlines == null) ? 0 : deadlines.hashCode());
+        result = prime * result
+                + ((moreProperties == null) ? 0 : moreProperties.hashCode());
         return result;
     }
 
@@ -388,6 +410,11 @@ public class TaskImpl implements InternalTask {
         if ( taskData == null ) {
             if ( other.taskData != null ) return false;
         } else if ( !taskData.equals( other.taskData ) ) return false;
+        if (moreProperties == null) {
+            if (other.moreProperties != null)
+                return false;
+        } else if (!moreProperties.equals(other.moreProperties))
+            return false;
         return ( CollectionUtils.equals( descriptions, other.descriptions ) && CollectionUtils.equals( names, other.names )
         && CollectionUtils.equals( subjects, other.subjects ));
     }
@@ -423,7 +450,23 @@ public class TaskImpl implements InternalTask {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    
+
+    /**
+     * these fields are custom
+     * @param moreProperties
+     * @author PTI
+     */
+    public void setMoreProperties(Map<String, Object> moreProperties) {
+        this.moreProperties = moreProperties;
+    }
+
+    /**
+     * these fields are custom
+     * @author PTI
+     */
+    @Override
+    public Map<String, Object> getMoreProperties() {
+        return this.moreProperties;
+    }
 
 }

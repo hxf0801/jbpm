@@ -23,6 +23,7 @@ import org.drools.core.command.impl.CommandBasedStatefulKnowledgeSession;
 import org.drools.persistence.SingleSessionCommandService;
 import org.kie.api.command.Command;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.search.SearchCriteria;
 import org.kie.api.task.TaskLifeCycleEventListener;
 import org.kie.api.task.model.Attachment;
 import org.kie.api.task.model.Comment;
@@ -944,4 +945,10 @@ public class SynchronizedTaskService
 	    return taskService.taskQuery(userId);
 	}
 
+	@Override
+	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
+		synchronized (ksession) {
+			return taskService.getTasks(searchCriteria);
+		}
+	}
 }

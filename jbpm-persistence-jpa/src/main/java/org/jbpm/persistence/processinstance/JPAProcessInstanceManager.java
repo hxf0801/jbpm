@@ -29,6 +29,8 @@ import org.kie.api.runtime.process.WorkflowProcessInstance;
 import org.kie.internal.process.CorrelationKey;
 import org.kie.internal.runtime.manager.InternalRuntimeManager;
 import org.kie.internal.runtime.manager.context.ProcessInstanceIdContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is an implementation of the {@link ProcessInstanceManager} that uses JPA.
@@ -41,6 +43,8 @@ import org.kie.internal.runtime.manager.context.ProcessInstanceIdContext;
 public class JPAProcessInstanceManager
     implements
     ProcessInstanceManager {
+	
+	private static Logger logger = LoggerFactory.getLogger(JPAProcessInstanceManager.class.getName());
 
     private InternalKnowledgeRuntime kruntime;
     // In a scenario in which 1000's of processes are running daily,
@@ -211,5 +215,24 @@ public class JPAProcessInstanceManager
         }
         return getProcessInstance(processInstanceId);
     }
+
+	@Override
+	public void addProcessExtra(ProcessInstance processInstance,
+			Map<String, Object> parameters) {
+		ProcessPersistenceContext context 
+        = ((ProcessPersistenceContextManager) this.kruntime.getEnvironment()
+                .get( EnvironmentName.PERSISTENCE_CONTEXT_MANAGER ))
+                .getProcessPersistenceContext();
+		ProcessInstanceExtra extra = new ProcessInstanceExtra(processInstance.getId(), parameters);
+		if (logger.isInfoEnabled()) {
+			logger.info("Beginning persisting process instance extra information.....");
+			logger.info("Parameters==============" + parameters);
+			logger.info(extra.toString());
+			logger.info("Ending persisting process instance extra information.....");
+		}
+		if (extra.isValid()) {
+			context.persist(extra);
+		}
+	}
 
 }

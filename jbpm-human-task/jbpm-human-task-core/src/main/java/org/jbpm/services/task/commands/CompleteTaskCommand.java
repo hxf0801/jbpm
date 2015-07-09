@@ -74,6 +74,8 @@ public class CompleteTaskCommand extends UserGroupCallbackTaskCommand<Void> {
         
         TaskInstanceService instanceService = context.getTaskInstanceService();
         instanceService.complete(taskId, userId, data);
+        // 2015.2.24 PTI update extra table
+        context.getTaskQueryService().updateProcessExtra(taskId, data);
     	return null;
         
     }
