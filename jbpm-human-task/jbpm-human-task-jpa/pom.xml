@@ -53,6 +53,11 @@
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-core-asl</artifactId>
     </dependency>
+    <!-- PTI added jbpm-persistence-jpa -->
+    <dependency>
+    	<groupId>org.jbpm</groupId>
+    	<artifactId>jbpm-persistence-jpa</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

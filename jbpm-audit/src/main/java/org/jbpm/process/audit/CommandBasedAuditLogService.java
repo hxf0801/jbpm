@@ -44,6 +44,11 @@ public class CommandBasedAuditLogService implements AuditLogService {
     }
 
     @Override
+	public List<ProcessInstanceLog> findActiveProcessInstances() {
+    	return executor.execute(new FindActiveProcessInstancesCommand());
+	}
+
+	@Override
     public List<ProcessInstanceLog> findProcessInstances(String processId) {
         return executor.execute(new FindProcessInstancesCommand(processId));
     }
@@ -138,16 +143,7 @@ public class CommandBasedAuditLogService implements AuditLogService {
         return executor.execute(new AuditProcessInstanceLogQueryCommand(queryData));
     }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jbpm.process.audit.AuditLogService#getProcessInstances(org.kie.api.search.SearchCriteria)
-	 * @PTI
-	 */
-    public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
-		return executor.execute(new ProcessInstancesQueryCommand(searchCriteria));
-	}
-
-    @Override
+	@Override
     public void clear() {
         executor.execute(new ClearHistoryLogsCommand());
     }
@@ -156,5 +152,14 @@ public class CommandBasedAuditLogService implements AuditLogService {
     public void dispose() {
        // no-op 
     }
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.jbpm.process.audit.AuditLogService#getProcessInstances(org.kie.api.search.SearchCriteria)
+	 * @PTI
+	 */
+	public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
+		return executor.execute(new ProcessInstancesQueryCommand(searchCriteria));
+	}
 
 }

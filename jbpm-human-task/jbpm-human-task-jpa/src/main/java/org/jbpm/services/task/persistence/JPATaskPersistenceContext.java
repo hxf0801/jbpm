@@ -6,6 +6,7 @@ import static org.jbpm.services.task.persistence.TaskQueryManager.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,10 @@ import javax.persistence.FlushModeType;
 import javax.persistence.Id;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.drools.core.util.StringUtils;
+import org.jbpm.persistence.processinstance.ProcessInstanceExtra;
 import org.jbpm.services.task.impl.model.AttachmentImpl;
 import org.jbpm.services.task.impl.model.CommentImpl;
 import org.jbpm.services.task.impl.model.ContentImpl;
@@ -34,6 +37,7 @@ import org.kie.api.task.model.Content;
 import org.kie.api.task.model.Group;
 import org.kie.api.task.model.OrganizationalEntity;
 import org.kie.api.task.model.Task;
+import org.kie.api.task.model.TaskData;
 import org.kie.api.task.model.User;
 import org.kie.internal.query.QueryParameterIdentifiers;
 import org.kie.internal.task.api.TaskPersistenceContext;

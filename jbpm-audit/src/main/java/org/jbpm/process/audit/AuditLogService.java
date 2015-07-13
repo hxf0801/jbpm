@@ -36,7 +36,6 @@ import org.kie.internal.runtime.manager.audit.query.VariableInstanceLogQueryBuil
  * Please see the public methods for the interface of this service. 
  */
 public interface AuditLogService extends AuditService {
-
     /**
      * Service methods
      * @return
@@ -44,6 +43,8 @@ public interface AuditLogService extends AuditService {
 	@Override
     public List<ProcessInstanceLog> findProcessInstances();
 
+    public List<ProcessInstanceLog> findActiveProcessInstances();
+    
     public List<ProcessInstanceLog> findProcessInstances(String processId);
 
     public List<ProcessInstanceLog> findActiveProcessInstances(String processId);

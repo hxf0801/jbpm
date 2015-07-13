@@ -222,13 +222,49 @@ public class JPAAuditLogService implements AuditLogService {
         EntityManager em = getEntityManager();
         Object newTx = joinTransaction(em);
         try {
-        	return (ProcessInstanceLog) em
-        	        .createQuery("FROM ProcessInstanceLog p WHERE p.processInstanceId = :processInstanceId")
-        	        .setParameter("processInstanceId", processInstanceId).getSingleResult();
+            ProcessInstanceLog processInstanceLog =
+                    (ProcessInstanceLog)em
+                            .createQuery("FROM ProcessInstanceLog p WHERE p.processInstanceId = :processInstanceId")
+                            .setParameter("processInstanceId", processInstanceId).getSingleResult();
+            
+            ProcessInstanceExtra processInstanceExtra =
+                    (ProcessInstanceExtra)getEntityManager()
+                            .createQuery("FROM ProcessInstanceExtra p WHERE p.processInstanceId = :processInstanceId")
+                            .setParameter("processInstanceId", processInstanceId).getSingleResult();
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("site_code", processInstanceExtra.getSiteCode());
+            map.put("service_code", processInstanceExtra.getServiceCode());
+            map.put("company_code", processInstanceExtra.getCompanyCode());
+            map.put("process_group", processInstanceExtra.getProcessGroup());
+            map.put("item_key", processInstanceExtra.getItemKey());
+            map.put("item_type", processInstanceExtra.getItemType());
+            map.put("opt_type", processInstanceExtra.getOptType());
+            map.put("text1", processInstanceExtra.getText1());
+            map.put("text2", processInstanceExtra.getText2());
+            map.put("text3", processInstanceExtra.getText3());
+            map.put("text4", processInstanceExtra.getText4());
+            map.put("text5", processInstanceExtra.getText5());
+            map.put("char1", processInstanceExtra.getChar1());
+            map.put("char2", processInstanceExtra.getChar2());
+            map.put("money1", processInstanceExtra.getMoney1());
+            map.put("money2", processInstanceExtra.getMoney2());
+            map.put("money3", processInstanceExtra.getMoney3());
+            map.put("integer1", processInstanceExtra.getInteger1());
+            map.put("integer2", processInstanceExtra.getInteger2());
+            map.put("decimal1", processInstanceExtra.getDecimal1());
+            map.put("decimal2", processInstanceExtra.getDecimal2());
+            map.put("date1", processInstanceExtra.getDate1());
+            map.put("date2", processInstanceExtra.getDate2());
+            map.put("date3", processInstanceExtra.getDate3());
+            map.put("timestamp1", processInstanceExtra.getTimestamp1());
+            map.put("timestamp2", processInstanceExtra.getTimestamp2());
+            map.put("wfe_client_id", processInstanceExtra.getWfeClientIdentifier());
+            processInstanceLog.setMoreProperties(map);
+            return processInstanceLog;
         } catch (NoResultException e) {
-        	return null;
+            return null;
         } finally {
-        	closeEntityManager(em, newTx);
+            closeEntityManager(em, newTx);
         }
     }
     
@@ -372,60 +408,10 @@ public class JPAAuditLogService implements AuditLogService {
         return persistenceStrategy.getEntityManager();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jbpm.process.audit.AuditLogService#findProcessInstance(long)
-     */
-    @Override
-    public ProcessInstanceLog findProcessInstance(long processInstanceId) {
-        EntityManager em = getEntityManager();
-        Object newTx = joinTransaction(em);
-        try {
-            ProcessInstanceLog processInstanceLog =
-                    (ProcessInstanceLog)em
-                            .createQuery("FROM ProcessInstanceLog p WHERE p.processInstanceId = :processInstanceId")
-                            .setParameter("processInstanceId", processInstanceId).getSingleResult();
-            
-            ProcessInstanceExtra processInstanceExtra =
-                    (ProcessInstanceExtra)getEntityManager()
-                            .createQuery("FROM ProcessInstanceExtra p WHERE p.processInstanceId = :processInstanceId")
-                            .setParameter("processInstanceId", processInstanceId).getSingleResult();
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("site_code", processInstanceExtra.getSiteCode());
-            map.put("service_code", processInstanceExtra.getServiceCode());
-            map.put("company_code", processInstanceExtra.getCompanyCode());
-            map.put("process_group", processInstanceExtra.getProcessGroup());
-            map.put("item_key", processInstanceExtra.getItemKey());
-            map.put("item_type", processInstanceExtra.getItemType());
-            map.put("opt_type", processInstanceExtra.getOptType());
-            map.put("text1", processInstanceExtra.getText1());
-            map.put("text2", processInstanceExtra.getText2());
-            map.put("text3", processInstanceExtra.getText3());
-            map.put("text4", processInstanceExtra.getText4());
-            map.put("text5", processInstanceExtra.getText5());
-            map.put("char1", processInstanceExtra.getChar1());
-            map.put("char2", processInstanceExtra.getChar2());
-            map.put("money1", processInstanceExtra.getMoney1());
-            map.put("money2", processInstanceExtra.getMoney2());
-            map.put("money3", processInstanceExtra.getMoney3());
-            map.put("integer1", processInstanceExtra.getInteger1());
-            map.put("integer2", processInstanceExtra.getInteger2());
-            map.put("decimal1", processInstanceExtra.getDecimal1());
-            map.put("decimal2", processInstanceExtra.getDecimal2());
-            map.put("date1", processInstanceExtra.getDate1());
-            map.put("date2", processInstanceExtra.getDate2());
-            map.put("date3", processInstanceExtra.getDate3());
-            map.put("timestamp1", processInstanceExtra.getTimestamp1());
-            map.put("timestamp2", processInstanceExtra.getTimestamp2());
-            map.put("wfe_client_id", processInstanceExtra.getWfeClientIdentifier());
-            processInstanceLog.setMoreProperties(map);
-            return processInstanceLog;
-        } catch (NoResultException e) {
-            return null;
-        } finally {
-            closeEntityManager(em, newTx);
-        }
+    private Object joinTransaction(EntityManager em) {
+        return persistenceStrategy.joinTransaction(em);
     }
+
     private void closeEntityManager(EntityManager em, Object transaction) {
        persistenceStrategy.leaveTransaction(em, transaction);
     }
