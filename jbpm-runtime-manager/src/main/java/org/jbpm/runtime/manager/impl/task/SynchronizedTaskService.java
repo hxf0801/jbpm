@@ -46,6 +46,8 @@ import org.kie.internal.task.api.model.SubTasksStrategy;
 import org.kie.internal.task.api.model.TaskDef;
 import org.kie.internal.task.api.model.TaskEvent;
 import org.kie.internal.task.query.TaskQueryBuilder;
+
+import com.pti.fsc.common.wf.WfTaskSummary;
 /**
  * Fully synchronized <code>TaskService</code> implementation used by the <code>SingletonRuntimeManager</code>.
  * Synchronization is done on <code>CommandService</code> of the <code>KieSession</code> to ensure correctness 
@@ -945,10 +947,43 @@ public class SynchronizedTaskService
 	    return taskService.taskQuery(userId);
 	}
 
+	/**
+	 * @author PTI
+	 */
 	@Override
 	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
 		synchronized (ksession) {
 			return taskService.getTasks(searchCriteria);
+		}
+	}
+	
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public List<TaskSummary> getTasksByInstanceId(long processInstanceId) {
+		synchronized (ksession) {
+			return taskService.getTasksByInstanceId(processInstanceId);
+		}
+	}
+	
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public List<WfTaskSummary> getTaskSummary(SearchCriteria searchCriteria) {
+		synchronized (ksession) {
+			return taskService.getTaskSummary(searchCriteria);
+		}
+	}
+
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public void updateProcessExtra(long taskId, Map<String, Object> data) {
+		synchronized (ksession) {
+			taskService.updateProcessExtra(taskId, data);
 		}
 	}
 }

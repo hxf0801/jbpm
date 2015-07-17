@@ -250,6 +250,7 @@
               org.kie.api.task,
               org.kie.api.task.model,
 			  org.kie.api.search,
+			  com.pti.fsc.common.wf,
               org.kie.internal,
               org.kie.internal.query,
               org.kie.internal.builder,

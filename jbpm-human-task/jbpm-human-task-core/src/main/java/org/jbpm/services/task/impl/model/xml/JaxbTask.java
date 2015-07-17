@@ -104,7 +104,10 @@ public class JaxbTask implements InternalTask {
     @XmlElement(name="form-name")
     @XmlSchemaType(name="string")
     private String formName;
-
+    
+    @XmlElement(name="batch-process-type")
+    @XmlSchemaType(name="string")
+    private String batchProcessType;
     /**
      * Use map to return our self-defined table properties
      * @author PTI
@@ -140,6 +143,7 @@ public class JaxbTask implements InternalTask {
         this.taskType = task.getTaskType();
         this.formName = ((InternalTask)task).getFormName();
         this.taskData = new JaxbTaskData(task.getTaskData());
+		this.moreProperties = task.getMoreProperties();
     }
    
     /**
@@ -524,5 +528,16 @@ public class JaxbTask implements InternalTask {
      */
 	public void setMoreProperties(Map<String, Object> moreProperties) {
 		this.moreProperties = moreProperties;
+	}
+	
+	/**
+	 * @return the batchProcess
+	 */
+	public String getBatchProcessType() {
+		return batchProcessType;
+	}
+
+	public void setBatchProcessType(String batchProcessType) {
+		this.batchProcessType = batchProcessType;
 	}
 }

@@ -73,7 +73,8 @@ import org.kie.internal.task.api.model.InternalTaskSummary;
 import org.kie.internal.task.api.model.SubTasksStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.codec.binary.Base64;
+
+import com.pti.fsc.common.wf.WfTaskSummary;
 
 /**
  *
@@ -1007,125 +1008,172 @@ public class TaskQueryServiceImpl implements TaskQueryService {
      */
     @Override
 	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
-    	String GENERIC_TASKSUM_QUERY = 
-            "select distinct t.id, t.processInstanceId, t.name as displayName, t.formname, t.subject, t.description,"
-            + " t.status, t.priority, t.skipable, t.actualOwner_id,"
-            + " t.createdBy_id, t.createdOn, t.activationTime, t.expirationTime, t.processId, t.processSessionId,"
-            + " t.subTaskStrategy, t.parentId, p.EXTERNALID, propTable.site_code, propTable.service_code, propTable.company_code,"
-            + " propTable.process_group, propTable.item_key, propTable.item_type, propTable.opt_type, propTable.text1, propTable.text2, propTable.text3, propTable.text4, propTable.text5,"
-            + " propTable.char1, propTable.char2, propTable.money1, propTable.money2, propTable.money3, propTable.integer1, propTable.integer2,"
-            + " propTable.decimal1, propTable.decimal2, propTable.date1, propTable.date2, propTable.date3, propTable.timestamp1, propTable.timestamp2 "
-            + "from Task t, "
-            + " OrganizationalEntity businessAdministrator,"
-            + " OrganizationalEntity potentialOwners,"
-            + " ProcessInstanceLog p,"
-            + " ProcInstanceProp propTable "
-            + "where t.archived=0 and t.status in ('Created' , 'Ready' , 'Reserved' , 'InProgress' , 'Suspended')"
-            + " and p.processInstanceId=propTable.process_instance_id and p.processInstanceId=t.processInstanceId and ";
-        StringBuilder queryBuilder = new StringBuilder(GENERIC_TASKSUM_QUERY);
+		String GENERIC_TASKSUM_QUERY =
+			"select distinct t.id, t.processInstanceId, t.name as displayName, t.formname, t.subject, t.description,"
+				+ " t.status, t.priority, t.skipable, t.actualOwner_id,"
+				+ " t.createdBy_id, t.createdOn, t.activationTime, t.expirationTime, t.processId, t.processSessionId,"
+				+ " t.subTaskStrategy, t.parentId,t.batch_process_type, p.EXTERNALID, propTable.site_code, propTable.service_code, propTable.company_code,"
+				+ " propTable.process_group, propTable.item_key, propTable.item_type, propTable.opt_type, propTable.text1, propTable.text2, propTable.text3, propTable.text4, propTable.text5,"
+				+ " propTable.char1, propTable.char2, propTable.money1, propTable.money2, propTable.money3, propTable.integer1, propTable.integer2,"
+				+ " propTable.decimal1, propTable.decimal2, propTable.date1, propTable.date2, propTable.date3, propTable.timestamp1, propTable.timestamp2, propTable.wfe_client_id,propTable.Bu_Name "
+				+ "from Task t, "
+				+ " OrganizationalEntity businessAdministrator,"
+				+ " OrganizationalEntity potentialOwners,"
+				+ " ProcessInstanceLog p,"
+				+ " ProcInstanceProp propTable "
+				+ "where t.archived=0 and t.status in ('Created' , 'Ready' , 'Reserved' , 'InProgress' , 'Suspended')"
+				+ " and p.processInstanceId=propTable.process_instance_id and p.processInstanceId=t.processInstanceId and ";
+		StringBuilder queryBuilder = new StringBuilder(GENERIC_TASKSUM_QUERY);
 
-        Map<String, Object> queryParams = new HashMap<String, Object>();
-        queryParams.put(FLUSH_MODE, FlushModeType.COMMIT.toString());
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		queryParams.put(FLUSH_MODE, FlushModeType.COMMIT.toString());
 		queryParams.put(FIRST_RESULT, searchCriteria.getFirstResult());
-		if(searchCriteria.getMaxResults() != -1) {
+		if (searchCriteria.getMaxResults() != -1) {
 			queryParams.put(MAX_RESULTS, searchCriteria.getMaxResults());
 		}
-		
+
 		if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
-			searchCriteria.setWhereStr(new String(Base64.decodeBase64(searchCriteria.getWhereStr().getBytes())));
+			searchCriteria.setWhereStr(searchCriteria.getWhereStr());
 		}
 
-		logger.info("******************************" + searchCriteria);
-		
-        int nextPosition = 0;
+		logger.info("searchCriteria >>>" + searchCriteria);
+
+		int nextPosition = 0;
 		if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
-            queryBuilder.append(searchCriteria.getWhereStr());
-            List<WhereParameter> fields = searchCriteria.getParams();
-            nextPosition = fields.size();
-            for (WhereParameter paramObj : fields) {
-                List<?> values = paramObj.getValues();
-                if (null != values) {
-                    if(values.size() > 1) {
-                        Set<Object> paramVals = new HashSet<Object>();
-                        for (Object val : values) {
-                            if (val != null) {
-                                paramVals.add(val);
-                            }
-                        }
-                        queryParams.put(String.valueOf(paramObj.getParameterPosition()), paramVals);
-                    } else if(values.size() == 1) {
-                        queryParams.put(String.valueOf(paramObj.getParameterPosition()), values.get(0));
-                    }
-                }
-            }
+			queryBuilder.append(searchCriteria.getWhereStr());
+			List<WhereParameter> fields = searchCriteria.getParams();
+			nextPosition = fields.size();
+			for (WhereParameter paramObj : fields) {
+				List<?> values = paramObj.getValues();
+				if (null != values) {
+					if (values.size() > 1) {
+						Set<Object> paramVals = new HashSet<Object>();
+						for (Object val : values) {
+							if (val != null) {
+								paramVals.add(val);
+							}
+						}
+						queryParams.put(String.valueOf(paramObj.getParameterPosition()), paramVals);
+					} else if (values.size() == 1) {
+						queryParams.put(String.valueOf(paramObj.getParameterPosition()), values.get(0));
+					}
+				}
+			}
 		}
-        // add userId or groupIds
-        if ((null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty())
-                || (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0)) {
-        	// (t.actualOwner_id is null or t.actualOwner_id = ?)
-            // (potentialOwners.id=?1 or potentialOwners.id in (?2)) and (potentialOwners.id in (select pot_.entity_id from PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))
-            if (nextPosition > 0) {
-                queryBuilder.append(" and ");
-            }
-            boolean hasUserId = false;
-            if (null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty()) {
-            	queryBuilder.append("(t.actualOwner_id is null or t.actualOwner_id = ?").append(++nextPosition).append(") and ");
-            	queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
-            	
-                queryBuilder.append("(potentialOwners.id=?").append(++nextPosition);
-                queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
-                hasUserId = true;
-            } else {
-            	queryBuilder.append("(");
-            }
-            if (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0) {
-                if (hasUserId)
-                    queryBuilder.append(" or ");
-                queryBuilder.append("potentialOwners.id in (?").append(++nextPosition).append(")");
-                Set<Object> paramVals = new HashSet<Object>();
-                for (String str : searchCriteria.getGroupIds()) {
-                    if (null != str) {
-                        paramVals.add(str);
-                    }
-                }
-                queryParams.put(String.valueOf(nextPosition), paramVals);
-            }
-            queryBuilder
-                    .append(")")
-                    .append(" and (potentialOwners.id in (select pot_.entity_id from PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))");
-        }
-        
-        if (null != searchCriteria.getOrderBy() && !searchCriteria.getOrderBy().isEmpty()) {
-            queryBuilder.append(searchCriteria.getOrderBy());
-        } else {
-            queryBuilder.append(" order by t.processInstanceId DESC, t.id DESC");
-        }
-        
-        String query = queryBuilder.toString();
-        String totalSql = "select count(*) from (" + query + ")";
-        logger.info("QUERY: " + query);
-        logger.info("Query params:" + queryParams);
-        logger.info("Total QUERY: " + totalSql);
-        
-        // 2014.11.3 support totalPages and totalRows
-        int totalRows = persistenceContext.nativequeryTotalRows(totalSql, queryParams);
+		// add bu filter 
+		if(null != searchCriteria.getBuNames() && searchCriteria.getBuNames().size() > 0) {
+			if (nextPosition > 0) {
+				queryBuilder.append(" and ");
+			}
+			queryBuilder.append(" (propTable.Bu_Name is null or propTable.Bu_Name in (?").append(++nextPosition).append("))");
+			Set<Object> paramVals = new HashSet<Object>();
+			for (String str : searchCriteria.getBuNames()) {
+				if (null != str) {
+					paramVals.add(str);
+				}
+			}
+			queryParams.put(String.valueOf(nextPosition), paramVals);
+		}
+		// add userId or groupIds
+		if ((null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty())
+			|| (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0)) {
+			// (potentialOwners.id=?1 or potentialOwners.id in (?2)) and
+			// (potentialOwners.id in (select pot_.entity_id from
+			// PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))
+			if (nextPosition > 0) {
+				queryBuilder.append(" and ");
+			}
+			queryBuilder.append("(");
+			boolean hasUserId = false;
+			if (null != searchCriteria.getUserId() && !searchCriteria.getUserId().isEmpty()) {
+				queryBuilder.append("potentialOwners.id=?").append(++nextPosition);
+				queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
+				hasUserId = true;
+			}
+			if (null != searchCriteria.getGroupIds() && searchCriteria.getGroupIds().size() > 0) {
+				if (hasUserId)
+					queryBuilder.append(" or ");
+				queryBuilder.append("potentialOwners.id in (?").append(++nextPosition).append(")");
+				Set<Object> paramVals = new HashSet<Object>();
+				for (String str : searchCriteria.getGroupIds()) {
+					if (null != str) {
+						paramVals.add(str);
+					}
+				}
+				queryParams.put(String.valueOf(nextPosition), paramVals);
+			}
+			queryBuilder
+					.append(")")
+					.append(
+						" and (potentialOwners.id in (select pot_.entity_id from PeopleAssignments_PotOwners pot_ where t.id=pot_.task_id))");
+			if (hasUserId) {
+				// (t.actualOwner_id is null or t.actualOwner_id = ?)
+				queryBuilder.append(" and (t.actualOwner_id = ?").append(++nextPosition)
+						.append(" or t.actualOwner_id is null )");
+				queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
+			}
+			if(hasUserId) {
+				queryBuilder.append(" and ( ?").append(++nextPosition).append(" not in (select pxc_.entity_id from peopleassignments_exclowners pxc_ where t.id = pxc_.task_id )) ");
+				queryParams.put(String.valueOf(nextPosition), searchCriteria.getUserId());
+			}
+			if (searchCriteria.isExcludedUser()) {
+				if (null != searchCriteria.getExcludedUserIds() && searchCriteria.getExcludedUserIds().length() > 0) {
+					queryBuilder
+							.append(
+								" and (t.id not in (select pot_.task_id from PeopleAssignments_PotOwners pot_ where t.id = pot_.task_id and entity_id in (?")
+							.append(++nextPosition).append(")) or t.actualOwner_id is not null)");
+					if (searchCriteria.getExcludedUserIds().indexOf(",") > 0) {
+						Set<Object> paramVals = new HashSet<Object>();
+						for (String str : searchCriteria.getExcludedUserIds().split(",")) {
+							if (null != str) {
+								paramVals.add(str);
+							}
+						}
+						queryParams.put(String.valueOf(nextPosition), paramVals);
+					} else {
+						queryParams.put(String.valueOf(nextPosition), searchCriteria.getExcludedUserIds());
+					}
+				} else if (hasUserId) {
+					queryBuilder
+							.append(
+								" and (t.id not in (select pot_.task_id from PeopleAssignments_PotOwners pot_ where t.id = pot_.task_id and entity_id in (?")
+							.append(++nextPosition).append(")) or t.actualOwner_id is not null)");
+					queryParams.put(String.valueOf(nextPosition), "!" + searchCriteria.getUserId());
+				}
+			}
+		}
+
+		if (null != searchCriteria.getOrderBy() && !searchCriteria.getOrderBy().isEmpty()) {
+			queryBuilder.append(searchCriteria.getOrderBy());
+		} else {
+			queryBuilder.append(" order by t.processInstanceId DESC, t.id DESC");
+		}
+
+		String query = queryBuilder.toString();
+		String totalSql = "select count(*) from (" + query + ")";
+		logger.info("QUERY: " + query);
+		logger.info("Query params:" + queryParams);
+		logger.info("Total QUERY: " + totalSql);
+
+		// 2014.11.3 support totalPages and totalRows
+		int totalRows = persistenceContext.nativequeryTotalRows(totalSql, queryParams);
 		int totalPages = (totalRows + searchCriteria.getMaxResults() - 1) / searchCriteria.getMaxResults();
-        
-        List<Object[]> list = persistenceContext.nativequeryWithParametersInTransaction(query, queryParams);
-        List<TaskSummary> results = new ArrayList<TaskSummary>();
-		if (null != results) {
+
+		List<Object[]> list = persistenceContext.nativequeryWithParametersInTransaction(query, queryParams);
+		List<TaskSummary> results = new ArrayList<TaskSummary>();
+		if (null != list) {
 			boolean isFirstRecord = true;
 			for (Object[] row : list) {
-			    int i = -1;
+				int i = -1;
 				TaskSummaryImpl vo = new TaskSummaryImpl();
-				vo.setId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
-				vo.setProcessInstanceId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
-				vo.setName((String) row[++i]);
+				vo.setId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setProcessInstanceId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setName((String)row[++i]);
 				vo.setFormName((String) row[++i]);
-				vo.setSubject((String) row[++i]);
+				vo.setSubject((String)row[++i]);
 				vo.setDescription((String)row[++i]);
 				vo.setStatus(Status.valueOf((String)row[++i]));
-				vo.setPriority((null == row[++i] ? 0 : ((BigDecimal) row[i]).intValue()));
+				vo.setPriority((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue()));
 				vo.setSkipable(((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue())) == 1);
 				UserImpl user = new UserImpl();
 				user.setId((String)row[++i]);
@@ -1133,60 +1181,314 @@ public class TaskQueryServiceImpl implements TaskQueryService {
 				user = new UserImpl();
 				user.setId((String)row[++i]);
 				vo.setCreatedBy(user);
-				vo.setCreatedOn((Date) row[++i]);
-				vo.setActivationTime((Date) row[++i]);
-				vo.setExpirationTime((Date) row[++i]);
+				vo.setCreatedOn((Date)row[++i]);
+				vo.setActivationTime((Date)row[++i]);
+				vo.setExpirationTime((Date)row[++i]);
 				vo.setProcessId((String)row[++i]);
-				vo.setProcessSessionId((null == row[++i] ? 0 : ((BigDecimal) row[i]).intValue()));
+				vo.setProcessSessionId((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue()));
 				vo.setSubTaskStrategy(SubTasksStrategy.valueOf((String)row[++i]));
-				vo.setParentId((null == row[++i] ? 0L : ((BigDecimal) row[i]).longValue()));
-				vo.setDeploymentId((String) row[++i]);
-
-				// all keys must be lower case. The following statements must be same as 
+				vo.setParentId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setBatchProcessType((String)row[++i]);
+				vo.setDeploymentId((String)row[++i]);
+				// all keys must be lower case. The following statements must be
+				// same as
 				// the block in line 483 of JPAAuditLogService.java
 				Map<String, Object> map = new HashMap<String, Object>();
-                if(null != row[++i]) map.put("site_code", (String) row[i]);
-                if(null != row[++i]) map.put("service_code", (String) row[i]);
-                if(null != row[++i]) map.put("company_code", (String) row[i]);
-                if(null != row[++i]) map.put("process_group", (String) row[i]);
-                if(null != row[++i]) map.put("item_key", (String) row[i]);
-                if(null != row[++i]) map.put("item_type", (String) row[i]);
-                if(null != row[++i]) map.put("opt_type", (String) row[i]);
-                if(null != row[++i]) map.put("text1", (String) row[i]);
-                if(null != row[++i]) map.put("text2", (String) row[i]);
-                if(null != row[++i]) map.put("text3", (String) row[i]);
-                if(null != row[++i]) map.put("text4", (String) row[i]);
-                if(null != row[++i]) map.put("text5", (String) row[i]);
-                if(null != row[++i]) map.put("char1", (String) row[i]);
-                if(null != row[++i]) map.put("char2", (String) row[i]);
-                if(null != row[++i]) map.put("money1", ((BigDecimal) row[i]).doubleValue());
-                if(null != row[++i]) map.put("money2", ((BigDecimal) row[i]).doubleValue());
-                if(null != row[++i]) map.put("money3", ((BigDecimal) row[i]).doubleValue());
-                if(null != row[++i]) map.put("integer1", ((BigDecimal) row[i]).longValue());
-                if(null != row[++i]) map.put("integer2", ((BigDecimal) row[i]).longValue());
-                if(null != row[++i]) map.put("decimal1", ((BigDecimal) row[i]).longValue());
-                if(null != row[++i]) map.put("decimal2", ((BigDecimal) row[i]).longValue());
-                if(null != row[++i]) map.put("date1", (Date) row[i]);
-                if(null != row[++i]) map.put("date2", (Date) row[i]);
-                if(null != row[++i]) map.put("date3", (Date) row[i]);
-                if(null != row[++i]) map.put("timestamp1", (Date) row[i]);
-                if(null != row[++i]) map.put("timestamp2", (Date) row[i]);
+				if (null != row[++i])
+					map.put("site_code", row[i]);
+				if (null != row[++i])
+					map.put("service_code", row[i]);
+				if (null != row[++i])
+					map.put("company_code", row[i]);
+				if (null != row[++i])
+					map.put("process_group", row[i]);
+				if (null != row[++i])
+					map.put("item_key", row[i]);
+				if (null != row[++i])
+					map.put("item_type", row[i]);
+				if (null != row[++i])
+					map.put("opt_type", row[i]);
+				if (null != row[++i])
+					map.put("text1", row[i]);
+				if (null != row[++i])
+					map.put("text2", row[i]);
+				if (null != row[++i])
+					map.put("text3", row[i]);
+				if (null != row[++i])
+					map.put("text4", row[i]);
+				if (null != row[++i])
+					map.put("text5", row[i]);
+				if (null != row[++i])
+					map.put("char1", row[i]);
+				if (null != row[++i])
+					map.put("char2", row[i]);
+				if (null != row[++i])
+					map.put("money1", row[i]);
+				if (null != row[++i])
+					map.put("money2", row[i]);
+				if (null != row[++i])
+					map.put("money3", row[i]);
+				if (null != row[++i])
+					map.put("integer1", row[i]);
+				if (null != row[++i])
+					map.put("integer2", row[i]);
+				if (null != row[++i])
+					map.put("decimal1", row[i]);
+				if (null != row[++i])
+					map.put("decimal2", row[i]);
+				if (null != row[++i])
+					map.put("date1", row[i]);
+				if (null != row[++i])
+					map.put("date2", row[i]);
+				if (null != row[++i])
+					map.put("date3", row[i]);
+				if (null != row[++i])
+					map.put("timestamp1", row[i]);
+				if (null != row[++i])
+					map.put("timestamp2", row[i]);
+				if (null != row[++i])
+					map.put("wfe_client_id", row[i]);
+				if (null != row[++i])
+					map.put("Bu_Name", row[i]);
 				if (isFirstRecord) {
 					// only the first record holds the totalPages and totalRows
 					map.put("_totalRows_", totalRows);
 					map.put("_totalPages_", totalPages);
 					isFirstRecord = false;
 				}
-                vo.setMoreProperties(map);
+				vo.setMoreProperties(map);
 				results.add(vo);
 			}
 		}
 		logger.info("Queried tasks::" + results.size());
 		return results;
 	}
-    
+
 	@Override
 	public void updateProcessExtra(Long taskId, Map<String, Object> data) {
 		persistenceContext.updateProcessExtra(taskId, data);
+	}
+	
+	@Override
+	public List<TaskSummary> getTasksByInstanceId(long processInstanceId) {
+		String GENERIC_TASKSUM_QUERY = "select distinct t.id, t.processInstanceId, t.name as displayName, t.formname, t.subject, t.description, "
+				+ "  t.status, t.priority, t.skipable, t.actualOwner_id, "
+				+ " t.createdBy_id, t.createdOn, t.activationTime, t.expirationTime, t.processId, t.processSessionId, "
+				+ " t.subTaskStrategy, t.parentId, p.EXTERNALID, propTable.site_code, propTable.service_code, propTable.company_code, "
+				+ " propTable.process_group, propTable.item_key, propTable.item_type, propTable.opt_type, propTable.text1, propTable.text2, propTable.text3, propTable.text4, propTable.text5, "
+				+ " propTable.char1, propTable.char2, propTable.money1, propTable.money2, propTable.money3, propTable.integer1, propTable.integer2, "
+				+ "  propTable.decimal1, propTable.decimal2, propTable.date1, propTable.date2, propTable.date3, propTable.timestamp1, propTable.timestamp2, propTable.wfe_client_id "
+				+ " from Task t,  "
+				+ " ProcessInstanceLog p, "
+				+ " ProcInstanceProp propTable "
+				+ " where t.archived=0  "
+				+ " and p.processInstanceId=propTable.process_instance_id and p.processInstanceId=t.processInstanceId "
+				+ " and p.processInstanceId=?1 order by t.createdOn DESC ";
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		queryParams.put("1", processInstanceId);
+		List<Object[]> list = persistenceContext.nativequeryWithParametersInTransaction(GENERIC_TASKSUM_QUERY, queryParams);
+		List<TaskSummary> results = new ArrayList<TaskSummary>();
+		if (null != list) {
+			for (Object[] row : list) {
+				int i = -1;
+				TaskSummaryImpl vo = new TaskSummaryImpl();
+				vo.setId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setProcessInstanceId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setName((String)row[++i]);
+				vo.setFormName((String) row[++i]);
+				vo.setSubject((String)row[++i]);
+				vo.setDescription((String)row[++i]);
+				vo.setStatus(Status.valueOf((String)row[++i]));
+				vo.setPriority((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue()));
+				vo.setSkipable(((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue())) == 1);
+				UserImpl user = new UserImpl();
+				user.setId((String)row[++i]);
+				vo.setActualOwner(user);
+				user = new UserImpl();
+				user.setId((String)row[++i]);
+				vo.setCreatedBy(user);
+				vo.setCreatedOn((Date)row[++i]);
+				vo.setActivationTime((Date)row[++i]);
+				vo.setExpirationTime((Date)row[++i]);
+				vo.setProcessId((String)row[++i]);
+				vo.setProcessSessionId((null == row[++i] ? 0 : ((BigDecimal)row[i]).intValue()));
+				vo.setSubTaskStrategy(SubTasksStrategy.valueOf((String)row[++i]));
+				vo.setParentId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+				vo.setDeploymentId((String)row[++i]);
+				Map<String, Object> map = new HashMap<String, Object>();
+				if (null != row[++i])
+					map.put("site_code", row[i]);
+				if (null != row[++i])
+					map.put("service_code", row[i]);
+				if (null != row[++i])
+					map.put("company_code", row[i]);
+				if (null != row[++i])
+					map.put("process_group", row[i]);
+				if (null != row[++i])
+					map.put("item_key", row[i]);
+				if (null != row[++i])
+					map.put("item_type", row[i]);
+				if (null != row[++i])
+					map.put("opt_type", row[i]);
+				if (null != row[++i])
+					map.put("text1", row[i]);
+				if (null != row[++i])
+					map.put("text2", row[i]);
+				if (null != row[++i])
+					map.put("text3", row[i]);
+				if (null != row[++i])
+					map.put("text4", row[i]);
+				if (null != row[++i])
+					map.put("text5", row[i]);
+				if (null != row[++i])
+					map.put("char1", row[i]);
+				if (null != row[++i])
+					map.put("char2", row[i]);
+				if (null != row[++i])
+					map.put("money1", row[i]);
+				if (null != row[++i])
+					map.put("money2", row[i]);
+				if (null != row[++i])
+					map.put("money3", row[i]);
+				if (null != row[++i])
+					map.put("integer1", row[i]);
+				if (null != row[++i])
+					map.put("integer2", row[i]);
+				if (null != row[++i])
+					map.put("decimal1", row[i]);
+				if (null != row[++i])
+					map.put("decimal2", row[i]);
+				if (null != row[++i])
+					map.put("date1", row[i]);
+				if (null != row[++i])
+					map.put("date2", row[i]);
+				if (null != row[++i])
+					map.put("date3", row[i]);
+				if (null != row[++i])
+					map.put("timestamp1", row[i]);
+				if (null != row[++i])
+					map.put("timestamp2", row[i]);
+				if (null != row[++i])
+					map.put("wfe_client_id", row[i]);
+				vo.setMoreProperties(map);
+				results.add(vo);
+			}
+		}
+		return results;
+	}
+
+	@Override
+	public List<WfTaskSummary> getTaskSummary(SearchCriteria searchCriteria) {
+		String GENERIC_TASKSUM_QUERY = " select y.pk, y.createddate, y.duration, y.enddate, y.processinstanceid, y.startdate, y.status, y.taskid, y.taskname, y.userid, y.optlock, "
+			+ " propTable.char1, propTable.char2, propTable.company_code, propTable.date1, propTable.date2, propTable.date3, propTable.decimal1, propTable.decimal2, propTable.integer1, propTable.integer2, propTable.item_key, propTable.item_type, propTable.money1, propTable.money2, propTable.money3, propTable.opt_type,"
+			+ " propTable.process_group, propTable.service_code, propTable.site_code, propTable.text1, propTable.text2, propTable.text3, propTable.text4, propTable.text5, propTable.timestamp1, propTable.timestamp2 "
+			+ " from bamtasksummary y left join procinstanceprop propTable on y.processinstanceid=propTable.process_instance_id left join processinstancelog g on y.processinstanceid = g.processinstanceid "
+			+ " where g.status=2 and ";
+			StringBuilder queryBuilder = new StringBuilder(GENERIC_TASKSUM_QUERY);
+
+			Map<String, Object> queryParams = new HashMap<String, Object>();
+			queryParams.put(FLUSH_MODE, FlushModeType.COMMIT.toString());
+			queryParams.put(FIRST_RESULT, searchCriteria.getFirstResult());
+			if (searchCriteria.getMaxResults() != -1) {
+				queryParams.put(MAX_RESULTS, searchCriteria.getMaxResults());
+			}
+
+			if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+				searchCriteria.setWhereStr(searchCriteria.getWhereStr());
+			}
+
+			logger.info("searchCriteria >>>" + searchCriteria);
+
+			int nextPosition = 0;
+			if (null != searchCriteria.getWhereStr() && !searchCriteria.getWhereStr().isEmpty()) {
+				queryBuilder.append(searchCriteria.getWhereStr());
+				List<WhereParameter> fields = searchCriteria.getParams();
+				nextPosition = fields.size();
+				for (WhereParameter paramObj : fields) {
+					List<?> values = paramObj.getValues();
+					if (null != values) {
+						if (values.size() > 1) {
+							Set<Object> paramVals = new HashSet<Object>();
+							for (Object val : values) {
+								if (val != null) {
+									paramVals.add(val);
+								}
+							}
+							queryParams.put(String.valueOf(paramObj.getParameterPosition()), paramVals);
+						} else if (values.size() == 1) {
+							queryParams.put(String.valueOf(paramObj.getParameterPosition()), values.get(0));
+						}
+					}
+				}
+			}
+			if (null != searchCriteria.getOrderBy() && !searchCriteria.getOrderBy().isEmpty()) {
+				queryBuilder.append(searchCriteria.getOrderBy());
+			} else {
+				queryBuilder.append(" order by t.processInstanceId DESC, t.id DESC");
+			}
+			String query = queryBuilder.toString();
+			String totalSql = "select count(*) from (" + query + ")";
+			logger.info("QUERY: " + query);
+			logger.info("Query params:" + queryParams);
+			logger.info("Total QUERY: " + totalSql);
+
+			// 2014.11.3 support totalPages and totalRows
+			int totalRows = persistenceContext.nativequeryTotalRows(totalSql, queryParams);
+			int totalPages = (totalRows + searchCriteria.getMaxResults() - 1) / searchCriteria.getMaxResults();
+
+			List<Object[]> list = persistenceContext.nativequeryWithParametersInTransaction(query, queryParams);
+			List<WfTaskSummary> results = new ArrayList<WfTaskSummary>();
+			if (null != list) {
+				boolean isFirstRecord = true;
+				for (Object[] row : list) {
+					int i = -1;
+					WfTaskSummary vo = new WfTaskSummary();
+					vo.setPk((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setCreatedDate((Date)row[++i]);
+					vo.setDuration((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setEndDate((Date)row[++i]);
+					vo.setProcessinstanceid((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setStartdate((Date)row[++i]);
+					vo.setTaskStatus((String)row[++i]);
+					vo.setTaskId((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setTaskName((String)row[++i]);
+					vo.setUserId((String)row[++i]);
+					vo.setOptLock((int)((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue())));
+					vo.setChar1((String)row[++i]);
+					vo.setChar2((String)row[++i]);
+					vo.setCompanyCode((String)row[++i]);
+					vo.setDate1((Date)row[++i]);
+					vo.setDate2((Date)row[++i]);
+					vo.setDate3((Date)row[++i]);
+					vo.setDecimal1((BigDecimal)row[++i]);
+					vo.setDecimal2((BigDecimal)row[++i]);
+					vo.setInteger1((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setInteger2((null == row[++i] ? 0L : ((BigDecimal)row[i]).longValue()));
+					vo.setItemKey((String)row[++i]);
+					vo.setItemType((String)row[++i]);
+					vo.setMoney1((BigDecimal)row[++i]);
+					vo.setMoney2((BigDecimal)row[++i]);
+					vo.setMoney3((BigDecimal)row[++i]);
+					vo.setOptType((String)row[++i]);
+					vo.setProcessGroup((String)row[++i]);
+					vo.setServiceCode((String)row[++i]);
+					vo.setSiteCode((String)row[++i]);
+					vo.setText1((String)row[++i]);
+					vo.setText2((String)row[++i]);
+					vo.setText3((String)row[++i]);
+					vo.setText4((String)row[++i]);
+					vo.setText5((String)row[++i]);
+					vo.setTimestamp1((Date)row[++i]);
+					vo.setTimestamp2((Date)row[++i]);
+					if (isFirstRecord) {
+						vo.setTotalRows(totalRows);
+						vo.setTotalPages(totalPages);
+						isFirstRecord = false;
+					}
+					results.add(vo);
+				}
+			}
+			logger.info("Queried tasks::" + results.size());
+			return results;
 	}
 }

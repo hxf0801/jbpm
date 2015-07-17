@@ -153,11 +153,10 @@ public class CommandBasedAuditLogService implements AuditLogService {
        // no-op 
     }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jbpm.process.audit.AuditLogService#getProcessInstances(org.kie.api.search.SearchCriteria)
+	/**
 	 * @PTI
 	 */
+    @Override
 	public List<ProcessInstanceLog> getProcessInstances(SearchCriteria searchCriteria) {
 		return executor.execute(new ProcessInstancesQueryCommand(searchCriteria));
 	}

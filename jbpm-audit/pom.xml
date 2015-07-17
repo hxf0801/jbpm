@@ -180,10 +180,23 @@
     	<groupId>commons-codec</groupId>
     	<artifactId>commons-codec</artifactId>
     </dependency>
+    <dependency>
+      	<groupId>com.pti.fsc</groupId>
+      	<artifactId>jbpm-pti-api</artifactId>
+      </dependency>
   </dependencies>
  
   <properties>
     <maven.jdbc.url>jdbc:h2:mem:bamTest;MVCC=TRUE</maven.jdbc.url>
   </properties>
 
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>com.pti.fsc</groupId>
+  			<artifactId>jbpm-pti-api</artifactId>
+  			<version>${version}</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

@@ -114,7 +114,13 @@ public abstract class AbstractHTWorkItemHandler implements WorkItemHandler {
         task.setSubjects(subjects);
         
         task.setSubject(comment);
-        
+        String batchProcessType = (String) workItem.getParameter("batchProcessType");
+        System.out.println("++++++++++++++++" + batchProcessType);
+        if(batchProcessType == null){
+        	batchProcessType = "N";
+        }
+        System.out.println("++++++++++++++++" + batchProcessType);
+        task.setBatchProcessType(batchProcessType);
         String priorityString = (String) workItem.getParameter("Priority");
         int priority = 0;
         if (priorityString != null) {

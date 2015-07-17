@@ -69,12 +69,11 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
         this.isJTA = isJTA;
         this.pessimisticLocking = locking;
         
-        logger.debug("TaskPersistenceManager configured with em {}, isJTA {}, pessimistic locking {}", em, isJTA, locking);
+        logger.debug("TaskPersistenceManager configured with em {}, isJTA {}, pessimistic locking {}", new Object[] {em, isJTA, locking});
     }	
 	
 	@Override
 	public Task findTask(Long taskId) {
-		long start = System.currentTimeMillis();
 		check();
 		TaskImpl task = null;
 		if (this.pessimisticLocking) {
@@ -116,15 +115,14 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 					map.put("date3", processInstanceExtra.getDate3());
 					map.put("timestamp1", processInstanceExtra.getTimestamp1());
 					map.put("timestamp2", processInstanceExtra.getTimestamp2());
+					map.put("wfe_client_id", processInstanceExtra.getWfeClientIdentifier());
+					map.put("bu_name", processInstanceExtra.getBuName());
 					task.setMoreProperties(map);
 				}
 			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("find the specified task with extra table >>> " + task.getMoreProperties());
+			if (logger.isTraceEnabled()) {
+				logger.trace("find the specified task with extra table >>> " + task.getMoreProperties());
 			}
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug(">>>> ******* get task costs time(milliseconds): " + (System.currentTimeMillis() - start));
 		}
 		return task;
 	}
@@ -669,12 +667,12 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 				try {
 					position = Integer.parseInt(name);
 				} catch (Exception e) {
-					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					logger.warn("Name[" + name + "] is not a valid number, using named parameter");
 					position = 0;
 				}
-				if (position > 1) {
+				if (position >= 1) {
 				    Object o = params.get(name);
-				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+				    logger.trace("*******parameter class=" + o.getClass().getName() + ", value=" + o);
                     if (o instanceof XMLGregorianCalendar) {
                         query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
                     } else {
@@ -707,12 +705,12 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 				try {
 					position = Integer.parseInt(name);
 				} catch (Exception e) {
-					logger.info("Name[" + name + "] is not a valid number, using named parameter");
+					logger.warn("Name[" + name + "] is not a valid number, using named parameter");
 					position = 0;
 				}
-				if (position > 1) {
+				if (position >= 1) {
 				    Object o = params.get(name);
-				    logger.info("*******parameter class=" + o.getClass().getName() + ", value=" + o);
+				    logger.trace("*******parameter class=" + o.getClass().getName() + ", value=" + o);
                     if (o instanceof XMLGregorianCalendar) {
                         query.setParameter(position, ((XMLGregorianCalendar) o).toGregorianCalendar().getTime());
                     } else {
@@ -723,7 +721,11 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 				}
 			}
 		}
-		return ((BigDecimal)query.getSingleResult()).intValue();
+		Object obj = query.getSingleResult();
+		if (null != obj) {
+			logger.trace("***** returned result class type = " + obj.getClass().getName());
+		}
+		return ((BigDecimal)obj).intValue();
 	}
 
 	@Override
@@ -742,19 +744,19 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 				ProcessInstanceExtra processInstanceExtra =
 					doInternalFindProcessInstanceExtra(taskData.getProcessInstanceId());
 				if (null != processInstanceExtra) {
-					if (logger.isTraceEnabled()) {
-						logger.trace("updating extra table >>> " + processInstanceExtra);
+					if (logger.isDebugEnabled()) {
+						logger.debug("updating extra table >>> " + processInstanceExtra);
 					}
 					processInstanceExtra.updateState(data);
 					this.em.merge(processInstanceExtra);
-					if (logger.isTraceEnabled()) {
-						logger.trace("updated extra table >>> " + processInstanceExtra);
+					if (logger.isDebugEnabled()) {
+						logger.debug("updated extra table >>> " + processInstanceExtra);
 					}
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Find extra table object in a method
 	 * 

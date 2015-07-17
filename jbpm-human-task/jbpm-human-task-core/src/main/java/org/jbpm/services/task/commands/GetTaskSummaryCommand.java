@@ -9,34 +9,32 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kie.api.search.SearchCriteria;
-import org.kie.api.task.model.TaskSummary;
 import org.kie.internal.command.Context;
 
-import com.pti.fsc.wfe.util.WfeUserBuCallback;
+import com.pti.fsc.common.wf.WfTaskSummary;
 
 /**
  * Generic custom task query
  * @author PTI
  */
-@XmlRootElement(name = "get-tasks-command")
+@XmlRootElement(name = "get-task-summary-command")
 @XmlAccessorType(XmlAccessType.NONE)
-public class GetTasksCommand extends UserGroupCallbackTaskCommand<List<TaskSummary>> {
+public class GetTaskSummaryCommand extends UserGroupCallbackTaskCommand<List<WfTaskSummary>> {
 	private static final long serialVersionUID = -7588660203940682629L;
 	@XmlElement
 	private SearchCriteria searchCriteria;
 
-	public GetTasksCommand() {
+	public GetTaskSummaryCommand() {
 	}
 
-	public GetTasksCommand(SearchCriteria searchCriteria) {
+	public GetTaskSummaryCommand(SearchCriteria searchCriteria) {
 		this.searchCriteria = searchCriteria;
 	}
 
 	@Override
-	public List<TaskSummary> execute(Context cntxt) {
+	public List<WfTaskSummary> execute(Context cntxt) {
 		TaskContext context = (TaskContext) cntxt;
-	
-		String userId = this.searchCriteria.getUserId();
+		/*String userId = this.searchCriteria.getUserId();
 		List<String> groupIds = this.searchCriteria.getGroupIds();
 		if (null != groupIds && groupIds.size() > 0) {
 			doCallbackUserOperation(userId, context);
@@ -44,17 +42,8 @@ public class GetTasksCommand extends UserGroupCallbackTaskCommand<List<TaskSumma
 		} else {
 			groupIds = doUserGroupCallbackOperation(userId, null, context);
 			if(null != groupIds) searchCriteria.setGroupIds(groupIds);
-		}
-		List<String> buNames = this.searchCriteria.getBuNames();
-		if (null == buNames || buNames.size() == 0) {
-			WfeUserBuCallback buCallBack = new WfeUserBuCallback();
-			boolean needCheckBUFlag = buCallBack.needCheckBU(userId, searchCriteria.getSiteCode());
-			if(needCheckBUFlag) {
-				buNames = buCallBack.getBusForUser(userId,searchCriteria.getSiteCode());
-				this.searchCriteria.setBuNames(buNames);
-			}
-		}
-		return context.getTaskQueryService().getTasks(searchCriteria);
+		}*/
+		return context.getTaskQueryService().getTaskSummary(searchCriteria);
 	}
 
 	public SearchCriteria getSearchCriteria() {

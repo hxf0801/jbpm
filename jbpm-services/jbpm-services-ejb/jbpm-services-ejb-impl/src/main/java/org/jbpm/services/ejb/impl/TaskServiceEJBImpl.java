@@ -54,6 +54,8 @@ import org.kie.internal.task.api.model.TaskDef;
 import org.kie.internal.task.api.model.TaskEvent;
 import org.kie.internal.task.query.TaskQueryBuilder;
 
+import com.pti.fsc.common.wf.WfTaskSummary;
+
 @Stateless
 public class TaskServiceEJBImpl implements InternalTaskService, TaskService, TaskServiceEJBLocal {
 	
@@ -680,5 +682,27 @@ public class TaskServiceEJBImpl implements InternalTaskService, TaskService, Tas
 		return delegate.getTasks(searchCriteria);
 	}
 
+	/**
+     * @author PTI
+     */
+	@Override
+	public List<TaskSummary> getTasksByInstanceId(long processInstanceId) {
+		return delegate.getTasksByInstanceId(processInstanceId);
+	}
 
+	/**
+     * @author PTI
+     */
+	@Override
+	public List<WfTaskSummary> getTaskSummary(SearchCriteria searchCriteria) {
+		return delegate.getTaskSummary(searchCriteria);
+	}
+
+	/**
+     * @author PTI
+     */
+	@Override
+	public void updateProcessExtra(long taskId, Map<String, Object> data) {
+		delegate.updateProcessExtra(taskId, data);
+	}
 }

@@ -37,7 +37,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.jbpm.services.task.utils.CollectionUtils;
@@ -114,13 +113,19 @@ public class TaskImpl implements InternalTask {
     @Basic
     private Short archived = 0;
 
-    /**
+	/**
      * these fields are custom
      *
      * @author PTI
      */
-    @Transient
-    private Map<String, Object> moreProperties;
+	@Column(name="BATCH_PROCESS_TYPE", nullable=true)
+    private String batchProcessType;
+	/**
+     * these fields are custom
+     *
+     * @author PTI
+     */
+    private transient Map<String, Object> moreProperties;
     public TaskImpl() {
     }
 
@@ -197,14 +202,15 @@ public class TaskImpl implements InternalTask {
         } else {
             out.writeBoolean( false );
         }
-        
+
         if (moreProperties != null) {
             out.writeBoolean(true);
             out.writeObject(moreProperties);
         } else {
             out.writeBoolean(false);
         }
-        
+
+        out.writeUTF(batchProcessType);
     }
 
     @SuppressWarnings("unchecked")
@@ -250,6 +256,7 @@ public class TaskImpl implements InternalTask {
             moreProperties = (Map<String, Object>) in.readObject();
         }
         
+		batchProcessType = in.readUTF();
     }
     
     public Long getId() {
@@ -469,4 +476,17 @@ public class TaskImpl implements InternalTask {
         return this.moreProperties;
     }
 
+	/**
+	 * @return the batchProcess
+	 */
+	public String getBatchProcessType() {
+		return batchProcessType;
+	}
+
+	/**
+	 * @param batchProcess the batchProcess to set
+	 */
+	public void setBatchProcessType(String batchProcessType) {
+		this.batchProcessType = batchProcessType;
+	}
 }

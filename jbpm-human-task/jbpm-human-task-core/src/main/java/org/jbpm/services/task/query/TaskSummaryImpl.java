@@ -53,6 +53,8 @@ public class TaskSummaryImpl implements InternalTaskSummary {
     private long parentId;
     private List<String> potentialOwners;
     private boolean quickTaskSummary;
+    private String batchProcessType;
+    
     /**
      * @author PTI
      */
@@ -264,6 +266,13 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         } else {
             out.writeBoolean(false);
         }
+
+		if(this.moreProperties != null) {
+        	out.writeBoolean(true);
+        	out.writeObject(this.moreProperties);
+        } else {
+        	out.writeBoolean(false);
+        }
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -340,6 +349,10 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         
         if (in.readBoolean()) {
             formName = in.readUTF();
+        }
+
+		if(in.readBoolean()) {
+        	this.moreProperties = (Map) in.readObject();
         }
     }
 
@@ -687,6 +700,14 @@ public class TaskSummaryImpl implements InternalTaskSummary {
 
 	public void setFormName(String formName) {
 		this.formName = formName;
+	}
+
+	public String getBatchProcessType() {
+		return batchProcessType;
+	}
+
+	public void setBatchProcessType(String batchProcessType) {
+		this.batchProcessType = batchProcessType;
 	}
     
 }

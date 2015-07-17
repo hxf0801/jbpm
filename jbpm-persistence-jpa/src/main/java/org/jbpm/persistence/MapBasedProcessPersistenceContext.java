@@ -82,6 +82,9 @@ public class MapBasedProcessPersistenceContext extends MapBasedPersistenceContex
         return piInfo.getId();
     }
 
+    /**
+     * @author PTI
+     */
 	@Override
 	public ProcessInstanceExtra persist(
 			ProcessInstanceExtra processInstanceExtra) {

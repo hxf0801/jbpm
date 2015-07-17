@@ -905,9 +905,6 @@ public class JPAAuditLogService implements AuditLogService {
     }
 
     /**
-     * (non-Javadoc)
-     *
-     * @see org.kie.api.runtime.manager.audit.AuditService#getProcessInstances(org.kie.api.search.SearchCriteria)
      * @author PTI
      */
     @Override

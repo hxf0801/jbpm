@@ -115,6 +115,9 @@ public class ProcessInstanceExtra implements Serializable {
 	
 	@Column(name = "wfe_client_id")
 	private String wfeClientIdentifier;
+	
+	@Column(name = "bu_name")
+	private String buName;
 
 	public ProcessInstanceExtra() {
 
@@ -124,9 +127,9 @@ public class ProcessInstanceExtra implements Serializable {
 	 * Construct a new extra table object based on a given map of value
 	 * 
 	 * @param id
-	 *            - Long, process instance id
+	 *        - Long, process instance id
 	 * @param parameters
-	 *            - Map
+	 *        - Map
 	 */
 	public ProcessInstanceExtra(Long id, Map<String, Object> parameters) {
 		this.processInstanceId = id;
@@ -171,6 +174,7 @@ public class ProcessInstanceExtra implements Serializable {
 			this.timestamp1 = (Date)parameters.get(COLUMN_PREFIX + "timestamp1");
 			this.timestamp2 = (Date)parameters.get(COLUMN_PREFIX + "timestamp2");
 			this.wfeClientIdentifier = (String)parameters.get(COLUMN_PREFIX + "wfe_client_id");
+			this.buName = (String)parameters.get(COLUMN_PREFIX + "bu_name");
 		}
 	}
 
@@ -180,117 +184,90 @@ public class ProcessInstanceExtra implements Serializable {
 	 * it here when adding a new field
 	 * 
 	 * @param updatedParameters
-	 *            - Map
+	 *        - Map
 	 */
 	public void updateState(Map<String, Object> updatedParameters) {
 		if (null != updatedParameters) {
 			if (null != updatedParameters.get(COLUMN_PREFIX + "site_code")) {
-				this.siteCode = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "site_code");
+				this.siteCode = (String)updatedParameters.get(COLUMN_PREFIX + "site_code");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "service_code")) {
-				this.serviceCode = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "service_code");
+				this.serviceCode = (String)updatedParameters.get(COLUMN_PREFIX + "service_code");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "company_code")) {
-				this.companyCode = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "company_code");
+				this.companyCode = (String)updatedParameters.get(COLUMN_PREFIX + "company_code");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "process_group")) {
-				this.processGroup = (String) updatedParameters
-						.get(COLUMN_PREFIX + "process_group");
+				this.processGroup = (String)updatedParameters.get(COLUMN_PREFIX + "process_group");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "item_key")) {
-				this.itemKey = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "item_key");
+				this.itemKey = (String)updatedParameters.get(COLUMN_PREFIX + "item_key");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "item_type")) {
-				this.itemType = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "item_type");
+				this.itemType = (String)updatedParameters.get(COLUMN_PREFIX + "item_type");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "opt_type")) {
-				this.optType = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "opt_type");
+				this.optType = (String)updatedParameters.get(COLUMN_PREFIX + "opt_type");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "text1")) {
-				this.text1 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "text1");
+				this.text1 = (String)updatedParameters.get(COLUMN_PREFIX + "text1");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "text2")) {
-				this.text2 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "text2");
+				this.text2 = (String)updatedParameters.get(COLUMN_PREFIX + "text2");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "text3")) {
-				this.text3 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "text3");
+				this.text3 = (String)updatedParameters.get(COLUMN_PREFIX + "text3");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "text4")) {
-				this.text4 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "text4");
+				this.text4 = (String)updatedParameters.get(COLUMN_PREFIX + "text4");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "text5")) {
-				this.text5 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "text5");
+				this.text5 = (String)updatedParameters.get(COLUMN_PREFIX + "text5");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "char1")) {
-				this.char1 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "char1");
+				this.char1 = (String)updatedParameters.get(COLUMN_PREFIX + "char1");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "char2")) {
-				this.char2 = (String) updatedParameters.get(COLUMN_PREFIX
-						+ "char2");
+				this.char2 = (String)updatedParameters.get(COLUMN_PREFIX + "char2");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "money1")) {
-				this.money1 = this.convertTo(updatedParameters
-						.get(COLUMN_PREFIX + "money1"));
+				this.money1 = this.convertTo(updatedParameters.get(COLUMN_PREFIX + "money1"));
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "money2")) {
-				this.money2 = this.convertTo(updatedParameters
-						.get(COLUMN_PREFIX + "money2"));
+				this.money2 = this.convertTo(updatedParameters.get(COLUMN_PREFIX + "money2"));
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "money3")) {
-				this.money3 = this.convertTo(updatedParameters
-						.get(COLUMN_PREFIX + "money3"));
+				this.money3 = this.convertTo(updatedParameters.get(COLUMN_PREFIX + "money3"));
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "integer1")) {
-				this.integer1 = (Long) updatedParameters.get(COLUMN_PREFIX
-						+ "integer1");
+				this.integer1 = (Long)updatedParameters.get(COLUMN_PREFIX + "integer1");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "integer2")) {
-				this.integer2 = (Long) updatedParameters.get(COLUMN_PREFIX
-						+ "integer2");
+				this.integer2 = (Long)updatedParameters.get(COLUMN_PREFIX + "integer2");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "decimal1")) {
-				this.decimal1 = this.convertTo(updatedParameters
-						.get(COLUMN_PREFIX + "decimal1"));
+				this.decimal1 = this.convertTo(updatedParameters.get(COLUMN_PREFIX + "decimal1"));
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "decimal2")) {
-				this.decimal2 = this.convertTo(updatedParameters
-						.get(COLUMN_PREFIX + "decimal2"));
+				this.decimal2 = this.convertTo(updatedParameters.get(COLUMN_PREFIX + "decimal2"));
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "date1")) {
-				this.date1 = (Date) updatedParameters.get(COLUMN_PREFIX
-						+ "date1");
+				this.date1 = (Date)updatedParameters.get(COLUMN_PREFIX + "date1");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "date2")) {
-				this.date2 = (Date) updatedParameters.get(COLUMN_PREFIX
-						+ "date2");
+				this.date2 = (Date)updatedParameters.get(COLUMN_PREFIX + "date2");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "date3")) {
-				this.date3 = (Date) updatedParameters.get(COLUMN_PREFIX
-						+ "date3");
+				this.date3 = (Date)updatedParameters.get(COLUMN_PREFIX + "date3");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "timestamp1")) {
-				this.timestamp1 = (Date) updatedParameters.get(COLUMN_PREFIX
-						+ "timestamp1");
+				this.timestamp1 = (Date)updatedParameters.get(COLUMN_PREFIX + "timestamp1");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "timestamp2")) {
-				this.timestamp2 = (Date) updatedParameters.get(COLUMN_PREFIX
-						+ "timestamp2");
+				this.timestamp2 = (Date)updatedParameters.get(COLUMN_PREFIX + "timestamp2");
 			}
 			if (null != updatedParameters.get(COLUMN_PREFIX + "wfe_client_id")) {
-				this.wfeClientIdentifier = (String) updatedParameters
-						.get(COLUMN_PREFIX + "wfe_client_id");
+				this.wfeClientIdentifier = (String)updatedParameters.get(COLUMN_PREFIX + "wfe_client_id");
 			}
 		}
 	}
@@ -351,6 +328,7 @@ public class ProcessInstanceExtra implements Serializable {
 		sb.append("timestamp1:" + (null != timestamp1 ? timestamp1 : "") + ", ");
 		sb.append("timestamp2:" + (null != timestamp2 ? timestamp2 : "") + ", ");
 		sb.append("wfeClientIdentifier:" + (null != wfeClientIdentifier ? wfeClientIdentifier : ""));
+		sb.append("buName:" + (null != buName ? buName : ""));
 		sb.append("}");
 		return sb.toString();
 	}
@@ -605,4 +583,13 @@ public class ProcessInstanceExtra implements Serializable {
 	public void setWfeClientIdentifier(String wfeClientIdentifier) {
 		this.wfeClientIdentifier = wfeClientIdentifier;
 	}
+
+	public String getBuName() {
+		return buName;
+	}
+
+	public void setBuName(String buName) {
+		this.buName = buName;
+	}
+	
 }

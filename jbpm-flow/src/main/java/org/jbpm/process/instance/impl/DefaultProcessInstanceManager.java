@@ -87,6 +87,9 @@ public class DefaultProcessInstanceManager implements ProcessInstanceManager {
         return processInstancesByCorrelationKey.get(correlationKey);
     }
 
+	/**
+	 * PTI
+	 */
 	@Override
 	public void addProcessExtra(ProcessInstance processInstance, Map<String, Object> parameters) {
 		
