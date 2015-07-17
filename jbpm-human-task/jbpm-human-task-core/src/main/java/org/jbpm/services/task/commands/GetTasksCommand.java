@@ -48,7 +48,9 @@ public class GetTasksCommand extends UserGroupCallbackTaskCommand<List<TaskSumma
 		List<String> buNames = this.searchCriteria.getBuNames();
 		if (null == buNames || buNames.size() == 0) {
 			WfeUserBuCallback buCallBack = new WfeUserBuCallback();
-			boolean needCheckBUFlag = buCallBack.needCheckBU(userId, searchCriteria.getSiteCode());
+			boolean needCheckBUFlag = buCallBack.needCheckBU(userId,
+					searchCriteria.getSiteCode(),
+					searchCriteria.isWfeCheckBuFlag());
 			if(needCheckBUFlag) {
 				buNames = buCallBack.getBusForUser(userId,searchCriteria.getSiteCode());
 				this.searchCriteria.setBuNames(buNames);

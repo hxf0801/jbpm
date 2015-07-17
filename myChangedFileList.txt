@@ -14,7 +14,11 @@ jbpm-flow/src/main/java/org/jbpm/process/instance/impl/DefaultProcessInstanceMan
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/CompleteTaskCommand.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/CompositeCommand.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/GetTasksCommand.java
+jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/GetTaskSummaryCommand.java
+jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/GetTasksByInstanceIdCommand.java
+jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/commands/UpdateProcessExtraCommand.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/identity/DBUserGroupCallbackImpl.java
+jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/identity/DBUserInfoImpl.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/impl/TaskQueryServiceImpl.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/impl/command/CommandBasedTaskService.java
 jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/impl/model/xml/JaxbTask.java
@@ -22,6 +26,7 @@ jbpm-human-task/jbpm-human-task-core/src/main/java/org/jbpm/services/task/query/
 jbpm-human-task/jbpm-human-task-jpa/src/main/java/org/jbpm/services/task/impl/model/TaskDataImpl.java
 jbpm-human-task/jbpm-human-task-jpa/src/main/java/org/jbpm/services/task/impl/model/TaskImpl.java
 jbpm-human-task/jbpm-human-task-jpa/src/main/java/org/jbpm/services/task/persistence/JPATaskPersistenceContext.java
+jbpm-human-task/jbpm-human-task-workitems/src/main/java/org/jbpm/services/task/wih/AbstractHTWorkItemHandler.java
 jbpm-persistence-jpa/src/main/java/org/jbpm/persistence/JpaProcessPersistenceContext.java
 jbpm-persistence-jpa/src/main/java/org/jbpm/persistence/MapBasedProcessPersistenceContext.java
 jbpm-persistence-jpa/src/main/java/org/jbpm/persistence/ProcessPersistenceContext.java
@@ -29,3 +34,6 @@ jbpm-persistence-jpa/src/main/java/org/jbpm/persistence/processinstance/JPAProce
 jbpm-persistence-jpa/src/main/java/org/jbpm/persistence/processinstance/ProcessInstanceExtra.java
 jbpm-runtime-manager/src/main/java/org/jbpm/runtime/manager/impl/task/SynchronizedTaskService.java
 jbpm-services-ejb/jbpm-services-ejb-impl/src/main/java/org/jbpm/services/ejb/impl/TaskServiceEJBImpl.java
+
+# PTI customization implements to jBPM. The class should ship with aligned jBPM version
+jbpm-human-task/jbpm-human-task-core/src/main/java/com/pti/fsc/wfe/util/WfeUserBuCallback.java

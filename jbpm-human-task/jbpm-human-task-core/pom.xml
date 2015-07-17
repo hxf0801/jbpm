@@ -158,10 +158,6 @@
       <artifactId>commons-collections</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-    	<groupId>com.pti.fsc</groupId>
-    	<artifactId>jbpm-pti</artifactId>
-    </dependency>
   </dependencies>
 
   <build>
@@ -209,13 +205,4 @@
     </plugins>
 
   </build>
-  <dependencyManagement>
-  	<dependencies>
-  		<dependency>
-  			<groupId>com.pti.fsc</groupId>
-  			<artifactId>jbpm-pti</artifactId>
-  			<version>6.2.0.Final</version>
-  		</dependency>
-  	</dependencies>
-  </dependencyManagement>
 </project>
