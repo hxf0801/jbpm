@@ -75,6 +75,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.pti.fsc.common.wf.WfTaskSummary;
+import com.pti.fsc.wfe.util.WfeUserBuCallback;
 
 /**
  *
@@ -1025,6 +1026,9 @@ public class TaskQueryServiceImpl implements TaskQueryService {
 				+ " and p.processInstanceId=propTable.process_instance_id and p.processInstanceId=t.processInstanceId and ";
 		StringBuilder queryBuilder = new StringBuilder(GENERIC_TASKSUM_QUERY);
 
+		// handle the bu name parameter
+		handleBuNameParam(searchCriteria);
+
 		Map<String, Object> queryParams = new HashMap<String, Object>();
 		queryParams.put(FLUSH_MODE, FlushModeType.COMMIT.toString());
 		queryParams.put(FIRST_RESULT, searchCriteria.getFirstResult());
@@ -1262,6 +1266,25 @@ public class TaskQueryServiceImpl implements TaskQueryService {
 		}
 		logger.info("Queried tasks::" + results.size());
 		return results;
+	}
+
+    /**
+     * Need to access the database to check the BU.
+     * @param searchCriteria - SearchCriteria
+     */
+	private void handleBuNameParam(SearchCriteria searchCriteria) {
+		String userId = searchCriteria.getUserId();
+		List<String> buNames = searchCriteria.getBuNames();
+		if (null == buNames || buNames.size() == 0) {
+			WfeUserBuCallback buCallBack = new WfeUserBuCallback();
+			boolean needCheckBUFlag = buCallBack.needCheckBU(userId,
+					searchCriteria.getSiteCode(),
+					searchCriteria.isWfeCheckBuFlag());
+			if(needCheckBUFlag) {
+				buNames = buCallBack.getBusForUser(userId,searchCriteria.getSiteCode());
+				searchCriteria.setBuNames(buNames);
+			}
+		}
 	}
 
 	@Override

@@ -12,8 +12,6 @@ import org.kie.api.search.SearchCriteria;
 import org.kie.api.task.model.TaskSummary;
 import org.kie.internal.command.Context;
 
-import com.pti.fsc.wfe.util.WfeUserBuCallback;
-
 /**
  * Generic custom task query
  * @author PTI
@@ -44,17 +42,6 @@ public class GetTasksCommand extends UserGroupCallbackTaskCommand<List<TaskSumma
 		} else {
 			groupIds = doUserGroupCallbackOperation(userId, null, context);
 			if(null != groupIds) searchCriteria.setGroupIds(groupIds);
-		}
-		List<String> buNames = this.searchCriteria.getBuNames();
-		if (null == buNames || buNames.size() == 0) {
-			WfeUserBuCallback buCallBack = new WfeUserBuCallback();
-			boolean needCheckBUFlag = buCallBack.needCheckBU(userId,
-					searchCriteria.getSiteCode(),
-					searchCriteria.isWfeCheckBuFlag());
-			if(needCheckBUFlag) {
-				buNames = buCallBack.getBusForUser(userId,searchCriteria.getSiteCode());
-				this.searchCriteria.setBuNames(buNames);
-			}
 		}
 		return context.getTaskQueryService().getTasks(searchCriteria);
 	}
