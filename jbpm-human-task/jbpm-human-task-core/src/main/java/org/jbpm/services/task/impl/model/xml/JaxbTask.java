@@ -100,14 +100,24 @@ public class JaxbTask implements InternalTask {
     
     @XmlElement
     private JaxbDeadlines deadlines = new JaxbDeadlines();
-    
+    /**
+     * @author PTI
+     */
     @XmlElement(name="form-name")
     @XmlSchemaType(name="string")
     private String formName;
-    
+    /**
+     * @author PTI
+     */
     @XmlElement(name="batch-process-type")
     @XmlSchemaType(name="string")
-    private String batchProcessType;
+	private String batchProcessType;
+    /**
+     * @author PTI
+     */
+	@XmlElement(name = "actor-company-type")
+	@XmlSchemaType(name = "string")
+	private String actorCompanyType;
     /**
      * Use map to return our self-defined table properties
      * @author PTI
@@ -143,7 +153,12 @@ public class JaxbTask implements InternalTask {
         this.taskType = task.getTaskType();
         this.formName = ((InternalTask)task).getFormName();
         this.taskData = new JaxbTaskData(task.getTaskData());
+        /*
+         * @author PTI
+         */
 		this.moreProperties = task.getMoreProperties();
+		this.batchProcessType = task.getBatchProcessType();
+		this.actorCompanyType = task.getActorCompanyType();
     }
    
     /**
@@ -235,6 +250,11 @@ public class JaxbTask implements InternalTask {
        
         taskImpl.setTaskType(this.getTaskType());
         taskImpl.setFormName(this.getFormName());
+        /*
+         * @author PTI
+         */
+        taskImpl.setBatchProcessType(this.getBatchProcessType());
+        taskImpl.setActorCompanyType(this.getActorCompanyType());
         
         // task data
         InternalTaskData taskData = (InternalTaskData) TaskModelProvider.getFactory().newTaskData();
@@ -520,24 +540,46 @@ public class JaxbTask implements InternalTask {
     /**
      * @author PTI
      */
+    @Override
 	public Map<String, Object> getMoreProperties() {
 		return moreProperties;
 	}
 	/**
      * @author PTI
      */
+    @Override
 	public void setMoreProperties(Map<String, Object> moreProperties) {
 		this.moreProperties = moreProperties;
 	}
 	
-	/**
-	 * @return the batchProcess
-	 */
+    /**
+     * @author PTI
+     */
+    @Override
 	public String getBatchProcessType() {
 		return batchProcessType;
 	}
-
+    /**
+     * @author PTI
+     */
+    @Override
 	public void setBatchProcessType(String batchProcessType) {
 		this.batchProcessType = batchProcessType;
+	}
+
+    /**
+     * @author PTI
+     */
+    @Override
+	public String getActorCompanyType() {
+		return actorCompanyType;
+	}
+
+    /**
+     * @author PTI
+     */
+    @Override
+	public void setActorCompanyType(String actorCompanyType) {
+		this.actorCompanyType = actorCompanyType;
 	}
 }

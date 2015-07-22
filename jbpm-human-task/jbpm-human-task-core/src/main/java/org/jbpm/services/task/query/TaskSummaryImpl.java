@@ -53,8 +53,6 @@ public class TaskSummaryImpl implements InternalTaskSummary {
     private long parentId;
     private List<String> potentialOwners;
     private boolean quickTaskSummary;
-    private String batchProcessType;
-    
     /**
      * @author PTI
      */
@@ -63,6 +61,14 @@ public class TaskSummaryImpl implements InternalTaskSummary {
      * @author PTI
      */
     private String formName = "";
+    /**
+     * @author PTI
+     */
+    private String batchProcessType;
+    /**
+     * @author PTI
+     */
+    private String actorCompanyType;
 
     public TaskSummaryImpl(long id,
             String name,
@@ -259,20 +265,32 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         }
         
         out.writeBoolean(quickTaskSummary);
-        
+        //PTI begin ==================
         if (formName != null) {
             out.writeBoolean(true);
             out.writeUTF(formName);
         } else {
             out.writeBoolean(false);
         }
-
-		if(this.moreProperties != null) {
+		if(moreProperties != null) {
         	out.writeBoolean(true);
-        	out.writeObject(this.moreProperties);
+        	out.writeObject(moreProperties);
         } else {
         	out.writeBoolean(false);
         }
+		if (batchProcessType != null) {
+            out.writeBoolean(true);
+            out.writeUTF(batchProcessType);
+        } else {
+            out.writeBoolean(false);
+        }
+		if (actorCompanyType != null) {
+            out.writeBoolean(true);
+            out.writeUTF(actorCompanyType);
+        } else {
+            out.writeBoolean(false);
+        }
+		//PTI end ==================
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -346,14 +364,20 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         }
         
         quickTaskSummary = in.readBoolean();
-        
+        //PTI begin =================================
         if (in.readBoolean()) {
             formName = in.readUTF();
         }
-
 		if(in.readBoolean()) {
-        	this.moreProperties = (Map) in.readObject();
+        	moreProperties = (Map) in.readObject();
         }
+		if (in.readBoolean()) {
+            batchProcessType = in.readUTF();
+        }
+		if (in.readBoolean()) {
+            actorCompanyType = in.readUTF();
+        }
+		//PTI end ==================================
     }
 
     public Long getId() {
@@ -531,8 +555,12 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         result = prime * result + ((subject == null) ? 0 : subject.hashCode());
         result = prime * result + ((processId == null) ? 0 : processId.hashCode());
         result = prime * result + (int) (processSessionId ^ (processSessionId >>> 32));
+        // PTI begin ==============================
         result = prime * result + ((formName == null) ? 0 : formName.hashCode());
         result = prime * result + ((moreProperties == null) ? 0 : moreProperties.hashCode());
+        result = prime * result + ((batchProcessType == null) ? 0 : batchProcessType.hashCode());
+        result = prime * result + ((actorCompanyType == null) ? 0 : actorCompanyType.hashCode());
+        // PTI end ================================
         return result;
     }
 
@@ -640,6 +668,7 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         if (processSessionId != other.processSessionId) {
             return false;
         }
+        // PTI begin ======================================
         if (formName == null) {
             if (other.formName != null) {
                 return false;
@@ -654,6 +683,21 @@ public class TaskSummaryImpl implements InternalTaskSummary {
         } else if (!moreProperties.equals(other.moreProperties)) {
             return false;
         }
+        if (batchProcessType == null) {
+            if (other.batchProcessType != null) {
+                return false;
+            }
+        } else if (!batchProcessType.equals(other.batchProcessType)) {
+            return false;
+        }
+        if (actorCompanyType == null) {
+            if (other.actorCompanyType != null) {
+                return false;
+            }
+        } else if (!actorCompanyType.equals(other.actorCompanyType)) {
+            return false;
+        }
+        // PTI end ========================================
         return true;
     }
 
@@ -686,28 +730,57 @@ public class TaskSummaryImpl implements InternalTaskSummary {
 		this.deploymentId = deploymentId;
 	}
 
+	/**
+	 * @author PTI
+	 */
+	@Override
     public Map<String, Object> getMoreProperties() {
         return moreProperties;
     }
-
+	/**
+	 * @author PTI
+	 */
     public void setMoreProperties(Map<String, Object> moreProperties) {
         this.moreProperties = moreProperties;
     }
-
+	/**
+	 * @author PTI
+	 */
+	@Override
 	public String getFormName() {
 		return formName;
 	}
-
+	/**
+	 * @author PTI
+	 */
 	public void setFormName(String formName) {
 		this.formName = formName;
 	}
-
+	/**
+	 * @author PTI
+	 */
+	@Override
 	public String getBatchProcessType() {
 		return batchProcessType;
 	}
-
+	/**
+	 * @author PTI
+	 */
 	public void setBatchProcessType(String batchProcessType) {
 		this.batchProcessType = batchProcessType;
 	}
-    
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public String getActorCompanyType() {
+		return actorCompanyType;
+	}
+	/**
+	 * @author PTI
+	 */
+	public void setActorCompanyType(String actorCompanyType) {
+		this.actorCompanyType = actorCompanyType;
+	}
+
 }

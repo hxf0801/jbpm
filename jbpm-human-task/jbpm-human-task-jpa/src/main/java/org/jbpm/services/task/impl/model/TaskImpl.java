@@ -118,14 +118,18 @@ public class TaskImpl implements InternalTask {
      *
      * @author PTI
      */
+    private transient Map<String, Object> moreProperties;
+	/**
+     * @author PTI
+     */
 	@Column(name="BATCH_PROCESS_TYPE", nullable=true)
     private String batchProcessType;
 	/**
-     * these fields are custom
-     *
      * @author PTI
      */
-    private transient Map<String, Object> moreProperties;
+	@Column(name="ACTOR_COMPANY_TYPE", nullable=true)
+    private String actorCompanyType;
+    
     public TaskImpl() {
     }
 
@@ -203,14 +207,16 @@ public class TaskImpl implements InternalTask {
             out.writeBoolean( false );
         }
 
+        // PTI begin ============================
         if (moreProperties != null) {
             out.writeBoolean(true);
             out.writeObject(moreProperties);
         } else {
             out.writeBoolean(false);
         }
-
         out.writeUTF(batchProcessType);
+        out.writeUTF(actorCompanyType);
+        // PTI end ============================
     }
 
     @SuppressWarnings("unchecked")
@@ -252,11 +258,13 @@ public class TaskImpl implements InternalTask {
             deadlines.readExternal( in );
         }
 
+        // PTI begin ==============================
         if (in.readBoolean()) {
             moreProperties = (Map<String, Object>) in.readObject();
         }
-        
 		batchProcessType = in.readUTF();
+		actorCompanyType = in.readUTF();
+		// PTI end ================================
     }
     
     public Long getId() {
@@ -478,6 +486,7 @@ public class TaskImpl implements InternalTask {
 
 	/**
 	 * @return the batchProcess
+	 * @author PTI
 	 */
 	public String getBatchProcessType() {
 		return batchProcessType;
@@ -485,8 +494,25 @@ public class TaskImpl implements InternalTask {
 
 	/**
 	 * @param batchProcess the batchProcess to set
+	 * @author PTI
 	 */
 	public void setBatchProcessType(String batchProcessType) {
 		this.batchProcessType = batchProcessType;
+	}
+
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public String getActorCompanyType() {
+		return actorCompanyType;
+	}
+
+	/**
+	 * @author PTI
+	 */
+	@Override
+	public void setActorCompanyType(String actorCompanyType) {
+		this.actorCompanyType = actorCompanyType;
 	}
 }
