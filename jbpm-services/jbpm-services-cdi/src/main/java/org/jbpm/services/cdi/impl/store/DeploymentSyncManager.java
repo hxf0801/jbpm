@@ -2,6 +2,10 @@ package org.jbpm.services.cdi.impl.store;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -12,11 +16,14 @@ import org.jbpm.kie.services.impl.store.DeploymentSyncInvoker;
 import org.jbpm.kie.services.impl.store.DeploymentSynchronizer;
 import org.jbpm.services.api.DeploymentService;
 import org.jbpm.shared.services.impl.TransactionalCommandService;
-import org.kie.internal.runtime.cdi.BootOnLoad;
+//import org.kie.internal.runtime.cdi.BootOnLoad;
 
 @Named("DeploymentSyncManager-startable")
-@BootOnLoad
+//@BootOnLoad
 @ApplicationScoped
+@Singleton
+@Startup
+@TransactionManagement(TransactionManagementType.BEAN)
 public class DeploymentSyncManager {
 	
 	@Inject

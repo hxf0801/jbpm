@@ -77,7 +77,7 @@ public class HumanTaskServiceProducer {
     private Instance<List<TaskLifeCycleEventListener>> listOfListeners;
 
     @Inject
-    @PersistenceUnit(unitName = "org.jbpm.domain")
+//    @PersistenceUnit(unitName = "org.jbpm.domain")
     private EntityManagerFactory emf;
 
     // internal member to ensure only single instance of task service is produced
