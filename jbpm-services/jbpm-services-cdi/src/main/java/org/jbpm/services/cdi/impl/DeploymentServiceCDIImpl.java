@@ -24,7 +24,6 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
 
 import org.jbpm.kie.services.impl.KModuleDeploymentService;
 import org.jbpm.kie.services.impl.KModuleDeploymentUnit;
@@ -123,7 +122,6 @@ public class DeploymentServiceCDIImpl extends KModuleDeploymentService {
 	}
 	
 	@Inject
-    @PersistenceUnit(unitName = "org.jbpm.domain")
 	@Override
 	public void setEmf(EntityManagerFactory emf) {
 

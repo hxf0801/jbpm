@@ -39,7 +39,7 @@ import org.kie.internal.runtime.cdi.Activate;
 public class JPAExecutorServiceProducer {
 
 	@Inject
-	@PersistenceUnit(unitName = "org.jbpm.domain")
+//	@PersistenceUnit(unitName = "org.jbpm.domain")
 	private EntityManagerFactory emf;
 
 	@Produces
