@@ -38,10 +38,11 @@ jbpm-services-ejb/jbpm-services-ejb-impl/src/main/java/org/jbpm/services/ejb/imp
 jbpm-services/jbpm-executor/src/main/java/org/jbpm/executor/impl/jpa/JPAExecutorServiceProducer.java
 
 jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/impl/store/DeploymentSyncManager.java
+jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/impl/store/DeploymentSynchronizerCDInvoker
 jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/impl/DeploymentServiceCDIImpl.java
 jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/producer/HumanTaskServiceProducer.java
 jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/producer/TransactionalCommandServiceProducer.java
-
+jbpm-services/jbpm-services-cdi/src/main/java/org/jbpm/services/cdi/impl/audit/AuditJMSProcessor.java
 
 # PTI customization implements to jBPM. The class should ship with aligned jBPM version
 jbpm-human-task/jbpm-human-task-core/src/main/java/com/pti/fsc/wfe/util/WfeUserBuCallback.java
