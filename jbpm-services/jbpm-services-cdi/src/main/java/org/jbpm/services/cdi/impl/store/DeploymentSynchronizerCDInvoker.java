@@ -10,7 +10,7 @@ import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
-import javax.ejb.ScheduleExpression;
+//import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Timeout;
@@ -39,15 +39,16 @@ public class DeploymentSynchronizerCDInvoker {
 	
 	@PostConstruct
 	public void configure() {
-		if (DeploymentSynchronizer.DEPLOY_SYNC_ENABLED) {
-			ScheduleExpression schedule = new ScheduleExpression();
-			
-			schedule.hour("*");
-			schedule.minute("*");
-			schedule.second("*/" + DeploymentSynchronizer.DEPLOY_SYNC_INTERVAL);
-			timer = timerService.createCalendarTimer(schedule, new TimerConfig(null, false));
-		
-		}
+//		if (DeploymentSynchronizer.DEPLOY_SYNC_ENABLED) {
+//			ScheduleExpression schedule = new ScheduleExpression();
+//			
+//			schedule.hour("*");
+//			schedule.minute("*");
+//			schedule.second("*/" + DeploymentSynchronizer.DEPLOY_SYNC_INTERVAL);
+//			timer = timerService.createCalendarTimer(schedule, new TimerConfig(null, false));
+//		}
+	    //2016-9-7, PTI does not use the jBPM console UI to create kjar. PTI seldom deploy kjar during bpm running. so it only needs single-action timer
+	    timer = timerService.createSingleActionTimer(60000, new TimerConfig(null, false));
 	}
 	
 	@PreDestroy
