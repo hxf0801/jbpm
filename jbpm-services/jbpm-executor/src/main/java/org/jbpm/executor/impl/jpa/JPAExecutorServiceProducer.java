@@ -19,8 +19,6 @@ package org.jbpm.executor.impl.jpa;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
-//import javax.persistence.PersistenceUnit;
-
 import org.jbpm.executor.ExecutorServiceFactory;
 import org.jbpm.executor.impl.mem.InMemoryExecutorAdminServiceImpl;
 import org.jbpm.executor.impl.mem.InMemoryExecutorStoreService;
