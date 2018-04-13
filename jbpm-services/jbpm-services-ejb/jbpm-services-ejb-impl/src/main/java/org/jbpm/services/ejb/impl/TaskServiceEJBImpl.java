@@ -25,6 +25,7 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
+import com.pti.fsc.common.wf.WfTaskSummary;
 import org.jbpm.runtime.manager.impl.identity.UserDataServiceProvider;
 import org.jbpm.services.ejb.TaskServiceEJBLocal;
 import org.jbpm.services.task.HumanTaskConfigurator;
@@ -53,8 +54,6 @@ import org.kie.internal.task.api.model.SubTasksStrategy;
 import org.kie.internal.task.api.model.TaskDef;
 import org.kie.internal.task.api.model.TaskEvent;
 import org.kie.internal.task.query.TaskQueryBuilder;
-
-import com.pti.fsc.common.wf.WfTaskSummary;
 
 @Stateless
 public class TaskServiceEJBImpl implements InternalTaskService, TaskService, TaskServiceEJBLocal {
@@ -705,4 +704,14 @@ public class TaskServiceEJBImpl implements InternalTaskService, TaskService, Tas
 	public void updateProcessExtra(long taskId, Map<String, Object> data) {
 		delegate.updateProcessExtra(taskId, data);
 	}
+
+    @Override
+    public void updateProcessExtraByInstanceId(long processInstanceId, Map<String, Object> data) {
+        delegate.updateProcessExtraByInstanceId(processInstanceId, data);
+    }
+
+    @Override
+    public List<TaskSummary> getSystemTasks(SearchCriteria searchCriteria) {
+        return delegate.getSystemTasks(searchCriteria);
+    }
 }

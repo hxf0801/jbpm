@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.pti.fsc.common.wf.WfTaskSummary;
 import org.drools.core.command.CommandService;
 import org.jbpm.services.task.commands.ActivateTaskCommand;
 import org.jbpm.services.task.commands.AddAttachmentCommand;
@@ -49,6 +50,7 @@ import org.jbpm.services.task.commands.GetPendingSubTasksCommand;
 import org.jbpm.services.task.commands.GetPendingTasksByUserCommand;
 import org.jbpm.services.task.commands.GetPotentialOwnersForTaskCommand;
 import org.jbpm.services.task.commands.GetSubTasksCommand;
+import org.jbpm.services.task.commands.GetSystemTasksCommand;
 import org.jbpm.services.task.commands.GetTaskAssignedAsBusinessAdminCommand;
 import org.jbpm.services.task.commands.GetTaskAssignedAsExcludedOwnerCommand;
 import org.jbpm.services.task.commands.GetTaskAssignedAsInitiatorCommand;
@@ -88,6 +90,7 @@ import org.jbpm.services.task.commands.StopTaskCommand;
 import org.jbpm.services.task.commands.SuspendTaskCommand;
 import org.jbpm.services.task.commands.TaskCommand;
 import org.jbpm.services.task.commands.UndeployTaskDefCommand;
+import org.jbpm.services.task.commands.UpdateProcessExtraByInstanceCommand;
 import org.jbpm.services.task.commands.UpdateProcessExtraCommand;
 import org.jbpm.services.task.events.TaskEventSupport;
 import org.jbpm.services.task.impl.TaskContentRegistry;
@@ -116,8 +119,6 @@ import org.kie.internal.task.api.model.SubTasksStrategy;
 import org.kie.internal.task.api.model.TaskDef;
 import org.kie.internal.task.api.model.TaskEvent;
 import org.kie.internal.task.query.TaskQueryBuilder;
-
-import com.pti.fsc.common.wf.WfTaskSummary;
 
 public class CommandBasedTaskService implements InternalTaskService, EventService<TaskLifeCycleEventListener> {
 
@@ -784,35 +785,39 @@ public class CommandBasedTaskService implements InternalTaskService, EventServic
 		taskEventSupport.removeEventListener(listener);
 	}
 	
-	/**
-	 * @author PTI
-	 */
 	@Override
 	public List<TaskSummary> getTasks(SearchCriteria searchCriteria) {
 		return executor.execute(new GetTasksCommand(searchCriteria));
 	}
 	
-	/**
-	 * @author PTI
-	 */
 	@Override
 	public List<TaskSummary> getTasksByInstanceId(long processInstanceId) {
 		return executor.execute(new GetTasksByInstanceIdCommand(processInstanceId));
 	}
 	
-	/**
-	 * @author PTI
-	 */
 	@Override
 	public List<WfTaskSummary> getTaskSummary(SearchCriteria searchCriteria) {
 		return executor.execute(new GetTaskSummaryCommand(searchCriteria));
 	}
 
-	/**
-	 * @author PTI
-	 */
 	@Override
 	public void updateProcessExtra(long taskId, Map<String, Object> data) {
 		executor.execute(new UpdateProcessExtraCommand(taskId, data));
 	}
+
+    /* (non-Javadoc)
+     * @see org.kie.api.task.TaskService#updateProcessExtraByInstanceId(long, java.util.Map)
+     */
+    @Override
+    public void updateProcessExtraByInstanceId(long processInstanceId, Map<String, Object> data) {
+        executor.execute(new UpdateProcessExtraByInstanceCommand(processInstanceId, data));
+    }
+
+    /* (non-Javadoc)
+     * @see org.kie.api.task.TaskService#getSystemTasks(org.kie.api.search.SearchCriteria)
+     */
+    @Override
+    public List<TaskSummary> getSystemTasks(SearchCriteria searchCriteria) {
+        return executor.execute(new GetSystemTasksCommand(searchCriteria));
+    }
 }

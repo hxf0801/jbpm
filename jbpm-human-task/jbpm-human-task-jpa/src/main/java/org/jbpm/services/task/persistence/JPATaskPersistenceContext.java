@@ -1,9 +1,6 @@
 package org.jbpm.services.task.persistence;
 
 
-import static org.kie.internal.query.QueryParameterIdentifiers.*;
-import static org.jbpm.services.task.persistence.TaskQueryManager.*;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -39,11 +36,18 @@ import org.kie.api.task.model.OrganizationalEntity;
 import org.kie.api.task.model.Task;
 import org.kie.api.task.model.TaskData;
 import org.kie.api.task.model.User;
-import org.kie.internal.query.QueryParameterIdentifiers;
 import org.kie.internal.task.api.TaskPersistenceContext;
 import org.kie.internal.task.api.model.Deadline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.jbpm.services.task.persistence.TaskQueryManager.adaptQueryString;
+import static org.kie.internal.query.QueryParameterIdentifiers.FILTER;
+import static org.kie.internal.query.QueryParameterIdentifiers.FIRST_RESULT;
+import static org.kie.internal.query.QueryParameterIdentifiers.FLUSH_MODE;
+import static org.kie.internal.query.QueryParameterIdentifiers.MAX_RESULTS;
+import static org.kie.internal.query.QueryParameterIdentifiers.ORDER_BY;
+import static org.kie.internal.query.QueryParameterIdentifiers.ORDER_TYPE;
 
 public class JPATaskPersistenceContext implements TaskPersistenceContext {
 
@@ -757,19 +761,35 @@ public class JPATaskPersistenceContext implements TaskPersistenceContext {
 		}
 	}
 
-	/**
-	 * Find extra table object in a method
-	 * 
-	 * @param processInstanceId
-	 *        -long, process instance id
-	 * @return ProcessInstanceExtra
-	 * @author PTI
-	 */
-	private ProcessInstanceExtra doInternalFindProcessInstanceExtra(long processInstanceId) {
-		if (this.pessimisticLocking) {
-			return this.em
-					.find(ProcessInstanceExtra.class, processInstanceId, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
-		}
-		return this.em.find(ProcessInstanceExtra.class, processInstanceId);
-	}
+    @Override
+    public void updateProcessExtraByInstanceId(Long processInstanceId, Map<String, Object> data) {
+        check();
+        ProcessInstanceExtra processInstanceExtra = doInternalFindProcessInstanceExtra(processInstanceId);
+        if (null != processInstanceExtra) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("updating extra table >>> " + processInstanceExtra);
+            }
+            processInstanceExtra.updateState(data);
+            this.em.merge(processInstanceExtra);
+            if (logger.isDebugEnabled()) {
+                logger.debug("updated extra table >>> " + processInstanceExtra);
+            }
+        }
+    }
+
+    /**
+     * Find extra table object in a method
+     * 
+     * @param processInstanceId
+     *        -long, process instance id
+     * @return ProcessInstanceExtra
+     * @author PTI
+     */
+    private ProcessInstanceExtra doInternalFindProcessInstanceExtra(long processInstanceId) {
+        if (this.pessimisticLocking) {
+            return this.em
+                          .find(ProcessInstanceExtra.class, processInstanceId, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+        }
+        return this.em.find(ProcessInstanceExtra.class, processInstanceId);
+    }
 }
