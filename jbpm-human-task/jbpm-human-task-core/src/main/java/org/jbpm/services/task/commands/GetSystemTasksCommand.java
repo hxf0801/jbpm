@@ -26,7 +26,7 @@ import org.kie.api.search.SearchCriteria;
 import org.kie.api.task.model.TaskSummary;
 import org.kie.internal.command.Context;
 
-@XmlRootElement(name = "get-systasks-command")
+@XmlRootElement(name = "get-system-tasks-command")
 @XmlAccessorType(XmlAccessType.NONE)
 public class GetSystemTasksCommand extends UserGroupCallbackTaskCommand<List<TaskSummary>> {
 
