@@ -41,7 +41,12 @@ import org.kie.internal.runtime.conf.NamedObjectModel;
 import org.kie.internal.runtime.conf.ObjectModel;
 import org.kie.internal.runtime.conf.PersistenceMode;
 import org.kie.internal.runtime.conf.RuntimeStrategy;
-
+/*
+ * NOTE: Whenever adding new fields that represent actual item of deployment descriptor always update:
+ * - isEmpty method
+ * - clearClone method
+ * - Builder
+ */
 @XmlRootElement(name="deployment-descriptor")
 @XmlAccessorType(XmlAccessType.NONE)
 public class DeploymentDescriptorImpl implements DeploymentDescriptor, Serializable {
@@ -179,38 +184,38 @@ public class DeploymentDescriptorImpl implements DeploymentDescriptor, Serializa
 	}
 
 	@Override
-	public List<ObjectModel> getMarshallingStrategies() {		
-		return new ArrayList<ObjectModel>(marshallingStrategies);
+	public List<ObjectModel> getMarshallingStrategies() {
+		return new ArrayList<ObjectModel>(cleanSet(marshallingStrategies));
 	}
 
 	@Override
-	public List<ObjectModel> getEventListeners() {		
-		return new ArrayList<ObjectModel>(eventListeners);
+	public List<ObjectModel> getEventListeners() {
+		return new ArrayList<ObjectModel>(cleanSet(eventListeners));
 	}
 
 	@Override
-	public List<NamedObjectModel> getGlobals() {		
-		return new ArrayList<NamedObjectModel>(globals);
+	public List<NamedObjectModel> getGlobals() {
+		return new ArrayList<NamedObjectModel>(cleanNamedSet(globals));
 	}
 
 	@Override
-	public List<NamedObjectModel> getWorkItemHandlers() {		
-		return new ArrayList<NamedObjectModel>(workItemHandlers);
+	public List<NamedObjectModel> getWorkItemHandlers() {
+		return new ArrayList<NamedObjectModel>(cleanNamedSet(workItemHandlers));
 	}
 
 	@Override
-	public List<ObjectModel> getTaskEventListeners() {		
-		return new ArrayList<ObjectModel>(taskEventListeners);
+	public List<ObjectModel> getTaskEventListeners() {
+		return new ArrayList<ObjectModel>(cleanSet(taskEventListeners));
 	}
 
 	@Override
-	public List<NamedObjectModel> getEnvironmentEntries() {		
-		return new ArrayList<NamedObjectModel>(environmentEntries);
+	public List<NamedObjectModel> getEnvironmentEntries() {
+		return new ArrayList<NamedObjectModel>(cleanNamedSet(environmentEntries));
 	}
 
 	@Override
-	public List<NamedObjectModel> getConfiguration() {		
-		return new ArrayList<NamedObjectModel>(configuration);
+	public List<NamedObjectModel> getConfiguration() {
+		return new ArrayList<NamedObjectModel>(cleanNamedSet(configuration));
 	}
 	
 	@Override
@@ -311,8 +316,90 @@ public class DeploymentDescriptorImpl implements DeploymentDescriptor, Serializa
 		}
 	}
 
+    protected Set<NamedObjectModel> cleanNamedSet(Set<NamedObjectModel> input) {
+        input.remove(null);
 
-	@Override
+        return input;
+	}
+
+    protected Set<ObjectModel> cleanSet(Set<ObjectModel> input) {
+        input.remove(null);
+
+        return input;
+    }
+
+    public DeploymentDescriptor clearClone() throws CloneNotSupportedException {
+	    DeploymentDescriptorImpl clone = new DeploymentDescriptorImpl();
+
+	     clone.getBuilder()
+	    .setClasses(getClasses())
+	    .setConfiguration(getConfiguration())
+	    .setEnvironmentEntries(getEnvironmentEntries())
+	    .setEventListeners(getEventListeners())
+	    .setGlobals(getGlobals())
+	    .setMarshalingStrategies(getMarshallingStrategies())
+	    .setRequiredRoles(getRequiredRoles())
+	    .setTaskEventListeners(getTaskEventListeners())
+	    .setWorkItemHandlers(getWorkItemHandlers())
+	    .auditMode(getAuditMode())
+	    .auditPersistenceUnit(getAuditPersistenceUnit())
+	    .persistenceMode(getPersistenceMode())
+	    .persistenceUnit(getPersistenceUnit())
+	    .runtimeStrategy(getRuntimeStrategy());
+
+	     return clone;
+    }
+    
+    public boolean isEmpty() {
+        boolean empty = true;
+        
+        if (persistenceUnit != null) {
+            return false;
+        }
+        if (auditPersistenceUnit != null) {
+            return false;
+        }
+        if (auditMode != AuditMode.JPA) {
+            return false;
+        }
+        if (persistenceMode != PersistenceMode.JPA) {
+            return false;
+        }
+        if (runtimeStrategy != RuntimeStrategy.SINGLETON) {
+            return false;
+        }
+        if ( marshallingStrategies != null && !marshallingStrategies.isEmpty()) {
+            return false;
+        }
+        if (eventListeners != null && !eventListeners.isEmpty()) {
+            return false;
+        }
+        if (taskEventListeners != null && !taskEventListeners.isEmpty()) {
+            return false;
+        }
+        if (globals != null && !globals.isEmpty()) {
+            return false;
+        }
+        if (workItemHandlers != null && !workItemHandlers.isEmpty()) {
+            return false;
+        }
+        if (environmentEntries != null && !environmentEntries.isEmpty()) {
+            return false;
+        }
+        if (configuration != null && !configuration.isEmpty()) {
+            return false;
+        }
+        if (requiredRoles != null && !requiredRoles.isEmpty()) {
+            return false;
+        }
+        if (classes != null && !classes.isEmpty()) {
+            return false;
+        }
+
+        return empty;
+    }
+
+    @Override
 	public DeploymentDescriptorBuilder getBuilder() {
 		
 		return new DeploymentDescriptorBuilder() {

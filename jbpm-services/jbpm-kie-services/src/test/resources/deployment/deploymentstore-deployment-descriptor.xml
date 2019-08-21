@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<org.jbpm.kie.services.impl.KModuleDeploymentUnit>
+  <artifactId>cda</artifactId>
+  <groupId>com.pti.fsc</groupId>
+  <version>1.0.0</version>
+  <strategy>PER_PROCESS_INSTANCE</strategy>
+  <mergeMode>MERGE_COLLECTIONS</mergeMode>
+  <deploymentDescriptor class="org.jbpm.runtime.manager.impl.deploy.DeploymentDescriptorImpl">
+    <persistenceUnit>org.jbpm.domain</persistenceUnit>
+    <auditPersistenceUnit>org.jbpm.domain</auditPersistenceUnit>
+    <auditMode>JPA</auditMode>
+    <persistenceMode>JPA</persistenceMode>
+    <runtimeStrategy>PER_PROCESS_INSTANCE</runtimeStrategy>
+    <marshallingStrategies class="linked-hash-set"/>
+    <eventListeners class="linked-hash-set">
+      <org.kie.internal.runtime.conf.ObjectModel>
+        <resolver>mvel</resolver>
+        <identifier>new org.jbpm.services.task.admin.listener.TaskCleanUpProcessEventListener(taskService)</identifier>
+        <parameters/>
+      </org.kie.internal.runtime.conf.ObjectModel>
+    </eventListeners>
+    <taskEventListeners class="linked-hash-set"/>
+    </taskEventListeners>
+    <globals class="linked-hash-set"/>
+    <workItemHandlers class="linked-hash-set">
+      <org.kie.internal.runtime.conf.NamedObjectModel>
+        <resolver>mvel</resolver>
+        <identifier>new org.jbpm.process.workitem.bpmn2.ServiceTaskHandler(ksession)</identifier>
+        <parameters/>                           
+        <name>ExecuteCommand</name>
+      </org.kie.internal.runtime.conf.NamedObjectModel>
+      <org.kie.internal.runtime.conf.NamedObjectModel>
+        <resolver>mvel</resolver>
+        <identifier>new org.jbpm.process.instance.impl.demo.SystemOutWorkItemHandler()</identifier>
+        <parameters/>
+        <name>ValidateTxn</name>
+      </org.kie.internal.runtime.conf.NamedObjectModel>
+    </workItemHandlers>
+    <environmentEntries class="linked-hash-set"/>
+    <configuration class="linked-hash-set"/>
+    <requiredRoles class="linked-hash-set"/>
+    <classes/>
+    <mappedRoles>
+      <entry>
+        <string>all</string>
+        <linked-hash-set/>
+      </entry>
+      <entry>
+        <string>view</string>
+        <linked-hash-set/>
+      </entry>
+      <entry>
+        <string>execute</string>
+        <linked-hash-set/>
+      </entry>
+    </mappedRoles>
+  </deploymentDescriptor>
+  <deployed>false</deployed>
+  <strategyUnset>false</strategyUnset>
+  <attributes/>
+</org.jbpm.kie.services.impl.KModuleDeploymentUnit>
